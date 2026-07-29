@@ -88,6 +88,56 @@ describe("pinService", () => {
     expect(body.getAll("folderIds")).toEqual(["folder-1", "folder-2"]);
   });
 
+  it("likes and unlikes a Pin through authenticated endpoints", async () => {
+    const likedPin = {
+      ...pin,
+      likeCount: 1,
+      likedByCurrentUser: true,
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ message: "Pin curtido", data: likedPin }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            message: "Curtida removida",
+            data: pin,
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(pinService.like("pin-id")).resolves.toMatchObject({
+      data: { likeCount: 1, likedByCurrentUser: true },
+    });
+    await expect(pinService.unlike("pin-id")).resolves.toMatchObject({
+      data: { likeCount: 0, likedByCurrentUser: false },
+    });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      `${testApiUrl}/api/pin/pin-id/likes`,
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      `${testApiUrl}/api/pin/pin-id/likes`,
+      expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+
   it("builds a feed URL with text and exact suggestion filters", () => {
     expect(
       createInitialPinsPage({

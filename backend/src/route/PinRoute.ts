@@ -39,6 +39,18 @@ export default class PinRoute extends BaseRoute {
       (req: Request, res: Response, next: NextFunction) =>
         this.pinController.savePin(req, res, next),
     );
+    this.router.post(
+      "/:id/likes",
+      authMiddleware,
+      (req: Request, res: Response, next: NextFunction) =>
+        this.pinController.likePin(req, res, next),
+    );
+    this.router.delete(
+      "/:id/likes",
+      authMiddleware,
+      (req: Request, res: Response, next: NextFunction) =>
+        this.pinController.unlikePin(req, res, next),
+    );
     this.router.get(
       "/:id",
       authMiddleware,

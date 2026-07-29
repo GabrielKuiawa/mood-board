@@ -98,6 +98,9 @@ describe("PinDetailsPage", () => {
       "href",
       "/",
     );
+    expect(
+      screen.getByRole("article").parentElement?.parentElement,
+    ).toHaveClass("col-span-full", "md:col-span-3");
     expect(mocks.getById).toHaveBeenCalledWith(
       "reference-id",
       expect.any(AbortSignal),

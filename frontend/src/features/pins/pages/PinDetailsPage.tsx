@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 import {
   ArrowLeft,
   Expand,
-  Heart,
   MessageCircle,
   MoreHorizontal,
   Share2,
@@ -19,6 +18,7 @@ import { FolderSaveControl } from "@/features/folders/components/FolderSaveContr
 import { cn } from "@/lib/utils";
 import { PinAuthor } from "../components/PinAuthor";
 import { PinCard } from "../components/PinCard";
+import { PinLikeButton } from "../components/PinLikeButton";
 import { PinCardSkeleton } from "../components/PinCardSkeleton";
 import { initialPinsPage, pinService } from "../services/pinService";
 import type { Pin } from "../types";
@@ -119,9 +119,11 @@ function DetailCard({ pin }: { pin: Pin }) {
               <span className="sr-only">Voltar</span>
             </Link>
           </Button>
-          <IconAction label="Curtir Pin">
-            <Heart aria-hidden="true" />
-          </IconAction>
+          <PinLikeButton
+            pinId={pin.id}
+            initialLikeCount={pin.likeCount}
+            initiallyLiked={pin.likedByCurrentUser}
+          />
           <IconAction label="Comentar">
             <MessageCircle aria-hidden="true" />
           </IconAction>
@@ -147,7 +149,7 @@ function DetailCard({ pin }: { pin: Pin }) {
             <img
               src={pin.pathImage}
               alt={pin.description}
-              className="block h-auto max-h-185 w-auto max-w-full object-contain"
+              className="block h-auto max-h-150 w-auto max-w-full object-contain"
             />
             <IconAction
               label="Expandir imagem"
@@ -212,7 +214,7 @@ function DetailsMasonryItem({
 
   return (
     <div
-      className={cn("min-w-0", wide && "xl:col-span-3")}
+      className={cn("min-w-0", wide && "col-span-full md:col-span-3")}
       style={{ gridRowEnd: `span ${rowSpan}` }}
     >
       <div ref={contentRef}>{children}</div>
@@ -288,7 +290,7 @@ export function PinDetailsPage() {
         </DetailsMasonryItem>
         {relatedPins.map((relatedPin, index) => (
           <DetailsMasonryItem key={relatedPin.id}>
-            <PinCard pin={relatedPin} index={index} />
+            <PinCard pin={relatedPin} index={index} showLike />
           </DetailsMasonryItem>
         ))}
         {isFetchingNextPage &&

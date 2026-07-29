@@ -358,6 +358,44 @@ describe("API E2E", () => {
       })
       .expect(201);
 
+    expect(ownerPin.body.data).toMatchObject({
+      likeCount: 0,
+      likedByCurrentUser: false,
+    });
+
+    const likedByOtherUser = await api
+      .post(`/api/pin/${ownerPin.body.data.id}/likes`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(likedByOtherUser.body.data).toMatchObject({
+      likeCount: 1,
+      likedByCurrentUser: true,
+    });
+
+    const likeSeenByOwner = await api
+      .get(`/api/pin/${ownerPin.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(200);
+    expect(likeSeenByOwner.body).toMatchObject({
+      likeCount: 1,
+      likedByCurrentUser: false,
+    });
+
+    const repeatedLike = await api
+      .post(`/api/pin/${ownerPin.body.data.id}/likes`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(repeatedLike.body.data.likeCount).toBe(1);
+
+    const removedLike = await api
+      .delete(`/api/pin/${ownerPin.body.data.id}/likes`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(removedLike.body.data).toMatchObject({
+      likeCount: 0,
+      likedByCurrentUser: false,
+    });
+
     await api
       .post(
         `/api/folder/${otherFolder.body.data.id}/pins/${ownerPin.body.data.id}`,

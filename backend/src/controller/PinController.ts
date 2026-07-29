@@ -106,6 +106,46 @@ export class PinController {
     }
   }
 
+  public async likePin(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = getAuthenticatedUserId(req);
+      const pin = await this.pinService.likePin(
+        validateId(req.params.id),
+        userId,
+      );
+      res.json({
+        message: "Pin curtido",
+        data: this.serializePin(pin, userId),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async unlikePin(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = getAuthenticatedUserId(req);
+      const pin = await this.pinService.unlikePin(
+        validateId(req.params.id),
+        userId,
+      );
+      res.json({
+        message: "Curtida removida",
+        data: this.serializePin(pin, userId),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public async deletePin(
     req: Request,
     res: Response,
@@ -143,6 +183,8 @@ export class PinController {
         name: folder.getName(),
       })),
       savedFolderIds: userFolders.map((folder) => folder.getId()),
+      likeCount: pin.getLikedByUsers().length,
+      likedByCurrentUser: pin.isLikedBy(authenticatedUserId),
     };
   }
 }

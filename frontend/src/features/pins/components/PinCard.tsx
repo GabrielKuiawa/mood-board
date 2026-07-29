@@ -7,9 +7,10 @@ import { PinCardActions } from "./PinCardActions";
 type PinCardProps = {
   pin: Pin;
   index: number;
+  showLike?: boolean;
 };
 
-export function PinCard({ pin, index }: PinCardProps) {
+export function PinCard({ pin, index, showLike = false }: PinCardProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -39,6 +40,9 @@ export function PinCard({ pin, index }: PinCardProps) {
         pinTitle={pin.title}
         pinDescription={pin.description}
         savedFolderIds={pin.savedFolderIds}
+        likeCount={pin.likeCount}
+        likedByCurrentUser={pin.likedByCurrentUser}
+        showLike={showLike}
       />
     </article>
   );

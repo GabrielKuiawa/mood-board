@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import Folder from "./Folder";
 import Pin from "./Pin";
 import { UserRole } from "../enum/UserRole";
@@ -28,6 +34,9 @@ export class User {
 
   @OneToMany(() => Pin, (pin) => pin.user)
   public pins!: Pin[];
+
+  @ManyToMany(() => Pin, (pin) => pin.likedByUsers)
+  public likedPins!: Pin[];
 
   public getId(): string {
     return this.id;

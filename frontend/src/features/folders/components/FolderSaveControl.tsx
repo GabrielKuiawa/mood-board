@@ -384,7 +384,7 @@ export function FolderSaveControl({
               ref={menuRef}
               role="dialog"
               aria-label="Salvar Pin"
-              className="fixed z-100 w-112 max-w-[calc(100vw-1rem)] overflow-hidden rounded-3xl border bg-popover text-popover-foreground shadow-2xl"
+              className="fixed z-100 w-md max-w-[calc(100vw-1rem)] overflow-hidden rounded-3xl border bg-popover text-popover-foreground shadow-2xl"
               style={menuPosition}
               onClick={(event) => event.stopPropagation()}
             >

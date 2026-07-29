@@ -95,6 +95,10 @@ export async function seedDatabase(
       pin.setDescription(pinData.description);
       pin.user = owner;
       pin.setFolders(pinFolders);
+      const numberOfLikes = 1 + ((pinIndex * 3) % users.length);
+      for (let likeIndex = 0; likeIndex < numberOfLikes; likeIndex += 1) {
+        pin.likeBy(users[(pinIndex + likeIndex + 1) % users.length]);
+      }
 
       return pin;
     });

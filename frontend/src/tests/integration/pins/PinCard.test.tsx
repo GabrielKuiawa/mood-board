@@ -69,7 +69,16 @@ describe("PinCard", () => {
     expect(await screen.findByRole("button", { name: /Ideias/ })).toBeVisible();
     expect(screen.getByRole("button", { name: "Salvar" })).toBeVisible();
     expect(
+      screen.queryByRole("button", { name: "Curtir Pin" }),
+    ).not.toBeInTheDocument();
+    expect(
       screen.getByRole("button", { name: "Compartilhar Pin" }),
     ).toBeVisible();
+  });
+
+  it("shows the like action only when used as a detail recommendation", () => {
+    renderWithProviders(<PinCard pin={createPin()} index={0} showLike />);
+
+    expect(screen.getByRole("button", { name: "Curtir Pin" })).toBeVisible();
   });
 });

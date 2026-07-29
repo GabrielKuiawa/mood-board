@@ -57,11 +57,13 @@ describe("database seed", () => {
 
     const seededPin = await AppDataSource.getRepository(Pin).findOne({
       where: {},
-      relations: { user: true, folders: true },
+      relations: { user: true, folders: true, likedByUsers: true },
     });
 
     expect(seededPin?.getTitle()).toEqual(expect.any(String));
     expect(seededPin?.getUser()).toBeDefined();
     expect(seededPin?.getFolders().length).toBeGreaterThanOrEqual(1);
+    expect(seededPin?.getLikedByUsers().length).toBeGreaterThanOrEqual(1);
+    expect(seededPin?.getLikedByUsers().length).toBeLessThanOrEqual(8);
   });
 });

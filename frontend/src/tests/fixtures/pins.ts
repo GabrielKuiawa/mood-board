@@ -13,6 +13,8 @@ export function createPin(overrides: Partial<Pin> = {}): Pin {
     },
     folders: [],
     savedFolderIds: [],
+    likeCount: 0,
+    likedByCurrentUser: false,
     ...overrides,
   };
 }

@@ -12,7 +12,11 @@ export default class PinRepository extends BaseRepository<Pin> {
     pagination: PaginationParams,
   ): Promise<[Pin[], number]> {
     return this.repository.findAndCount({
-      relations: { folders: { user: true }, user: true },
+      relations: {
+        folders: { user: true },
+        user: true,
+        likedByUsers: true,
+      },
       skip: pagination.skip,
       take: pagination.limit,
       order: { id: "ASC" } as any,
@@ -28,6 +32,7 @@ export default class PinRepository extends BaseRepository<Pin> {
       .leftJoinAndSelect("pin.user", "user")
       .leftJoinAndSelect("pin.folders", "folder")
       .leftJoinAndSelect("folder.user", "folderUser")
+      .leftJoinAndSelect("pin.likedByUsers", "likedByUser")
       .distinct(true)
       .orderBy("pin.id", "ASC")
       .skip(pagination.skip)
@@ -71,7 +76,11 @@ export default class PinRepository extends BaseRepository<Pin> {
   public async findOneWithRelations(id: string): Promise<Pin | null> {
     return this.repository.findOne({
       where: { id } as any,
-      relations: { folders: { user: true }, user: true },
+      relations: {
+        folders: { user: true },
+        user: true,
+        likedByUsers: true,
+      },
     });
   }
 }

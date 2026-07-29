@@ -139,13 +139,15 @@ pela aplicação antes de excluir o usuário e seus relacionamentos do MySQL.
 
 ### Pins
 
-| Método   | Endpoint       | Descrição       |
-| -------- | -------------- | --------------- |
-| `GET`    | `/api/pin`     | Lista Pins      |
-| `POST`   | `/api/pin`     | Publica um Pin  |
-| `GET`    | `/api/pin/:id` | Busca um Pin    |
-| `PUT`    | `/api/pin/:id` | Atualiza um Pin |
-| `DELETE` | `/api/pin/:id` | Exclui um Pin   |
+| Método   | Endpoint             | Descrição          |
+| -------- | -------------------- | ------------------ |
+| `GET`    | `/api/pin`           | Lista Pins         |
+| `POST`   | `/api/pin`           | Publica um Pin     |
+| `GET`    | `/api/pin/:id`       | Busca um Pin       |
+| `PUT`    | `/api/pin/:id`       | Atualiza um Pin    |
+| `DELETE` | `/api/pin/:id`       | Exclui um Pin      |
+| `POST`   | `/api/pin/:id/likes` | Curte um Pin       |
+| `DELETE` | `/api/pin/:id/likes` | Remove uma curtida |
 
 Para publicar um Pin, envie `POST /api/pin` como
 `multipart/form-data`, com os campos:

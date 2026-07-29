@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -25,6 +26,14 @@ export default class Pin {
 
   @ManyToMany(() => Folder, (folder) => folder.pins)
   public folders!: Folder[];
+
+  @ManyToMany(() => User, (user) => user.likedPins)
+  @JoinTable({
+    name: "user_liked_pins_pin",
+    joinColumn: { name: "pinId", referencedColumnName: "id" },
+    inverseJoinColumn: { name: "userId", referencedColumnName: "id" },
+  })
+  public likedByUsers!: User[];
 
   @ManyToOne(() => User, (user) => user.pins, {
     nullable: false,
@@ -81,5 +90,24 @@ export default class Pin {
 
   public getUser(): User {
     return this.user;
+  }
+
+  public getLikedByUsers(): User[] {
+    return this.likedByUsers ?? [];
+  }
+
+  public likeBy(user: User): void {
+    if (!this.likedByUsers) this.likedByUsers = [];
+    if (!this.isLikedBy(user.getId())) this.likedByUsers.push(user);
+  }
+
+  public unlikeBy(userId: string): void {
+    this.likedByUsers = this.getLikedByUsers().filter(
+      (user) => user.getId() !== userId,
+    );
+  }
+
+  public isLikedBy(userId: string): boolean {
+    return this.getLikedByUsers().some((user) => user.getId() === userId);
   }
 }

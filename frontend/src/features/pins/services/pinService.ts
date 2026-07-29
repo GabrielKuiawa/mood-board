@@ -4,6 +4,11 @@ import type { ActiveSearch } from "@/features/search/types";
 
 const pinsPath = "/api/pin";
 
+type PinMutationResponse = {
+  message: string;
+  data: Pin;
+};
+
 export const initialPinsPage = `${pinsPath}?page=1&limit=20`;
 
 export function createInitialPinsPage(search: ActiveSearch | null): string {
@@ -67,6 +72,22 @@ export const pinService = {
           ? "Sua sessão expirou. Entre novamente."
           : `Não foi possível carregar os Pins: ${status}`,
       useServerErrorMessage: false,
+    });
+  },
+
+  like(pinId: string): Promise<PinMutationResponse> {
+    return apiRequest<PinMutationResponse>(`${pinsPath}/${pinId}/likes`, {
+      method: "POST",
+      authenticated: true,
+      errorMessage: "Não foi possível curtir o Pin.",
+    });
+  },
+
+  unlike(pinId: string): Promise<PinMutationResponse> {
+    return apiRequest<PinMutationResponse>(`${pinsPath}/${pinId}/likes`, {
+      method: "DELETE",
+      authenticated: true,
+      errorMessage: "Não foi possível remover a curtida.",
     });
   },
 };

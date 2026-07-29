@@ -102,6 +102,26 @@ export class PinService {
     return pin;
   }
 
+  public async likePin(id: string, userId: string): Promise<Pin> {
+    const [pin, user] = await Promise.all([
+      this.pinRepository.findOneWithRelations(id),
+      this.userRepository.findOne(userId),
+    ]);
+    if (!pin) throw new NotFoundException("Pin não encontrado.");
+    if (!user) throw new NotFoundException("Usuário não encontrado.");
+
+    pin.likeBy(user);
+    return this.pinRepository.save(pin);
+  }
+
+  public async unlikePin(id: string, userId: string): Promise<Pin> {
+    const pin = await this.pinRepository.findOneWithRelations(id);
+    if (!pin) throw new NotFoundException("Pin não encontrado.");
+
+    pin.unlikeBy(userId);
+    return this.pinRepository.save(pin);
+  }
+
   public async updatePin(
     id: string,
     title: string,

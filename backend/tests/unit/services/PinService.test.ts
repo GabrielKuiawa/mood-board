@@ -456,6 +456,52 @@ describe("PinService", () => {
     });
   });
 
+  describe("likes", () => {
+    it("adds a user like only once", async () => {
+      const pin = createPin(createUser(OWNER_ID));
+      const likingUser = createUser(OTHER_USER_ID);
+      pinRepository.findOneWithRelations.mockResolvedValue(pin);
+      userRepository.findOne.mockResolvedValue(likingUser);
+      pinRepository.save.mockImplementation(
+        async (pinToSave) => pinToSave as Pin,
+      );
+
+      await pinService.likePin(PIN_ID, OTHER_USER_ID);
+      const result = await pinService.likePin(PIN_ID, OTHER_USER_ID);
+
+      expect(result.getLikedByUsers()).toEqual([likingUser]);
+      expect(result.isLikedBy(OTHER_USER_ID)).toBe(true);
+      expect(pinRepository.save).toHaveBeenCalledTimes(2);
+    });
+
+    it("removes only the current user's like", async () => {
+      const pin = createPin(createUser(OWNER_ID));
+      const firstUser = createUser(OWNER_ID);
+      const secondUser = createUser(OTHER_USER_ID);
+      pin.likeBy(firstUser);
+      pin.likeBy(secondUser);
+      pinRepository.findOneWithRelations.mockResolvedValue(pin);
+      pinRepository.save.mockImplementation(
+        async (pinToSave) => pinToSave as Pin,
+      );
+
+      const result = await pinService.unlikePin(PIN_ID, OTHER_USER_ID);
+
+      expect(result.getLikedByUsers()).toEqual([firstUser]);
+      expect(result.isLikedBy(OTHER_USER_ID)).toBe(false);
+    });
+
+    it("rejects a like for a missing Pin", async () => {
+      pinRepository.findOneWithRelations.mockResolvedValue(null);
+      userRepository.findOne.mockResolvedValue(createUser(OTHER_USER_ID));
+
+      await expect(
+        pinService.likePin(PIN_ID, OTHER_USER_ID),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(pinRepository.save).not.toHaveBeenCalled();
+    });
+  });
+
   describe("getOwnedFolders", () => {
     it("should return folders owned by the user", async () => {
       const user = createUser(OWNER_ID);

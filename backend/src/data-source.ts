@@ -10,6 +10,7 @@ import { NormalizeConstraintNames1720760000001 } from "./migration/1720760000001
 import { CascadeCategoryImages1720760000002 } from "./migration/1720760000002-CascadeCategoryImages";
 import { AddImageTitle1720760000003 } from "./migration/1720760000003-AddImageTitle";
 import { RenameImagesAndCategories1720760000004 } from "./migration/1720760000004-RenameImagesAndCategories";
+import { AddPinLikes1720760000005 } from "./migration/1720760000005-AddPinLikes";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -29,6 +30,7 @@ export const AppDataSource = new DataSource({
     CascadeCategoryImages1720760000002,
     AddImageTitle1720760000003,
     RenameImagesAndCategories1720760000004,
+    AddPinLikes1720760000005,
   ],
   subscribers: [],
 });

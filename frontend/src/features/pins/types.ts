@@ -17,6 +17,8 @@ export type Pin = {
   author: PinAuthor;
   folders: Folder[];
   savedFolderIds: string[];
+  likeCount: number;
+  likedByCurrentUser: boolean;
 };
 
 export type PinPage = {
