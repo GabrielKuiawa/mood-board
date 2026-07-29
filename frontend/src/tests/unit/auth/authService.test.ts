@@ -161,6 +161,7 @@ describe("authService", () => {
         email: "maria@example.com",
         pathImageUser: "https://example.com/avatar.jpg",
         role: "user",
+        readOnly: false,
       };
       const fetchMock = vi.fn().mockResolvedValue(
         new Response(JSON.stringify(currentUser), {

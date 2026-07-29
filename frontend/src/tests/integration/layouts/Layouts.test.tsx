@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   clearAuthToken: vi.fn(),
+  getCurrentUser: vi.fn(),
   getSuggestions: vi.fn().mockResolvedValue({ data: [] }),
   navigate: vi.fn(),
 }));
@@ -30,6 +31,12 @@ vi.mock("@/lib/authTokenStorage", () => ({
   clearAuthToken: mocks.clearAuthToken,
 }));
 
+vi.mock("@/features/auth/services/authService", () => ({
+  authService: {
+    getCurrentUser: mocks.getCurrentUser,
+  },
+}));
+
 vi.mock("@/features/search/services/searchService", () => ({
   searchService: { getSuggestions: mocks.getSuggestions },
 }));
@@ -41,6 +48,14 @@ import { renderWithProviders } from "@/tests/utils/renderWithProviders";
 describe("AppLayout", () => {
   beforeEach(() => {
     mocks.clearAuthToken.mockReset();
+    mocks.getCurrentUser.mockReset().mockResolvedValue({
+      id: "user-id",
+      name: "Maria Silva",
+      email: "maria@example.com",
+      pathImageUser: "https://example.com/avatar.jpg",
+      role: "user",
+      readOnly: false,
+    });
     mocks.navigate.mockReset().mockResolvedValue(undefined);
   });
 
@@ -72,6 +87,39 @@ describe("AppLayout", () => {
       "/saved",
     );
     expect(screen.getByText("Conteúdo da rota")).toBeVisible();
+  });
+
+  it("warns about demo account restrictions and links to registration", async () => {
+    const user = userEvent.setup();
+    mocks.getCurrentUser.mockResolvedValue({
+      id: "demo-user-id",
+      name: "Conta Demo",
+      email: "demo@example.com",
+      pathImageUser: "https://example.com/demo-avatar.jpg",
+      role: "user",
+      readOnly: true,
+    });
+
+    renderWithProviders(<AppLayout />);
+
+    expect(
+      await screen.findByRole("region", { name: "Aviso da conta demo" }),
+    ).toBeVisible();
+    expect(screen.getByText("Você está em uma conta demo")).toBeVisible();
+    expect(screen.getByText(/Não é possível alterar dados/)).toBeVisible();
+    expect(
+      screen.queryByRole("link", { name: "Criar Pin" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Criar Pin indisponível na conta demo"),
+    ).toHaveAttribute("aria-disabled", "true");
+
+    const createAccountLink = screen.getByRole("link", {
+      name: "Criar minha conta",
+    });
+    expect(createAccountLink).toHaveAttribute("href", "/signup");
+    await user.click(createAccountLink);
+    expect(mocks.clearAuthToken).toHaveBeenCalledOnce();
   });
 
   it("clears the token and opens login on logout", async () => {

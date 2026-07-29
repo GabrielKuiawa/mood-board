@@ -287,22 +287,24 @@ export function UserMenu({ onLogout }: UserMenuProps) {
                     {user.email}
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-9 rounded-lg"
-                  aria-label="Editar perfil"
-                  title="Editar perfil"
-                  onClick={() => {
-                    setName(user.name);
-                    setPassword("");
-                    setIsPasswordVisible(false);
-                    setIsEditing(true);
-                  }}
-                >
-                  <Pencil aria-hidden="true" />
-                </Button>
+                {!user.readOnly && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 rounded-lg"
+                    aria-label="Editar perfil"
+                    title="Editar perfil"
+                    onClick={() => {
+                      setName(user.name);
+                      setPassword("");
+                      setIsPasswordVisible(false);
+                      setIsEditing(true);
+                    }}
+                  >
+                    <Pencil aria-hidden="true" />
+                  </Button>
+                )}
               </div>
             ))}
 
