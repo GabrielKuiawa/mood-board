@@ -12,6 +12,7 @@ describe("application router", () => {
         "/",
         "/feed",
         "/create",
+        "/my-pins",
         "/login",
         "/signup",
         "/pins/$pinId",

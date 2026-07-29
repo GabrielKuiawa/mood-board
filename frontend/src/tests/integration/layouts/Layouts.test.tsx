@@ -86,6 +86,10 @@ describe("AppLayout", () => {
       "href",
       "/saved",
     );
+    expect(screen.getByRole("link", { name: "Meus Pins" })).toHaveAttribute(
+      "href",
+      "/my-pins",
+    );
     expect(screen.getByText("Conteúdo da rota")).toBeVisible();
   });
 

@@ -16,6 +16,7 @@ import { SavedFoldersPage } from "@/features/folders/pages/SavedFoldersPage";
 import { PinDetailsPage } from "@/features/pins/pages/PinDetailsPage";
 import { PinFeedPage } from "@/features/pins/pages/PinFeedPage";
 import { CreatePinPage } from "@/features/pins/pages/CreatePinPage";
+import { ManagePinsPage } from "@/features/pins/pages/ManagePinsPage";
 import { LandingPage } from "@/features/landing/pages/LandingPage";
 
 const rootRoute = createRootRoute({
@@ -46,6 +47,12 @@ const createPinRoute = createRoute({
   getParentRoute: () => authenticatedRoute,
   path: "/create",
   component: CreatePinPage,
+});
+
+const managePinsRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: "/my-pins",
+  component: ManagePinsPage,
 });
 
 const savedFoldersRoute = createRoute({
@@ -85,6 +92,7 @@ const routeTree = rootRoute.addChildren([
   authenticatedRoute.addChildren([
     feedRoute,
     createPinRoute,
+    managePinsRoute,
     savedFoldersRoute,
     folderDetailsRoute,
     pinDetailsRoute,

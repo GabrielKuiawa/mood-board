@@ -14,7 +14,6 @@ import {
 import { useCurrentUserQuery } from "@/features/auth/hooks/useCurrentUserQuery";
 import { useImageFileInput } from "@/hooks/useImageFileInput";
 import { cn } from "@/lib/utils";
-import { CreatedPinsSection } from "../components/CreatedPinsSection";
 import { pinService } from "../services/pinService";
 
 export function CreatePinPage() {
@@ -255,7 +254,6 @@ export function CreatePinPage() {
           </div>
         </div>
       </form>
-      {currentUser && <CreatedPinsSection userId={currentUser.id} />}
     </main>
   );
 }

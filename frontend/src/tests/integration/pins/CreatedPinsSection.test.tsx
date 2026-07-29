@@ -86,4 +86,22 @@ describe("CreatedPinsSection", () => {
       ).not.toBeInTheDocument(),
     );
   });
+
+  it("keeps demo account Pins read-only", async () => {
+    renderWithProviders(
+      <CreatedPinsSection userId="demo-user" readOnly={true} />,
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Seus Pins" }),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        "Explore os Pins publicados por esta conta de demonstração.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Excluir Meu Pin" }),
+    ).not.toBeInTheDocument();
+  });
 });

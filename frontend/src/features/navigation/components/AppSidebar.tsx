@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import {
   CircleAlert,
   Home,
+  Images,
   LibraryBig,
   LockKeyhole,
   SquarePlus,
@@ -64,6 +65,26 @@ export function AppSidebar() {
             className="pointer-events-none absolute left-[calc(100%+0.7rem)] z-50 rounded-lg bg-foreground px-3 py-2 text-xs font-semibold whitespace-nowrap text-background opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
           >
             Salvos
+          </span>
+        </Link>
+
+        <Link
+          to="/my-pins"
+          aria-label="Meus Pins"
+          activeProps={{
+            className: "bg-foreground text-background",
+          }}
+          inactiveProps={{
+            className: "bg-background text-foreground hover:bg-accent",
+          }}
+          className="group relative flex size-12 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Images aria-hidden="true" className="size-6" strokeWidth={2.2} />
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute left-[calc(100%+0.7rem)] z-50 rounded-lg bg-foreground px-3 py-2 text-xs font-semibold whitespace-nowrap text-background opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+          >
+            Meus Pins
           </span>
         </Link>
 
