@@ -384,7 +384,7 @@ export function FolderSaveControl({
               ref={menuRef}
               role="dialog"
               aria-label="Salvar Pin"
-              className="fixed z-[100] w-[28rem] max-w-[calc(100vw-1rem)] overflow-hidden rounded-3xl border bg-popover text-popover-foreground shadow-2xl"
+              className="fixed z-100 w-112 max-w-[calc(100vw-1rem)] overflow-hidden rounded-3xl border bg-popover text-popover-foreground shadow-2xl"
               style={menuPosition}
               onClick={(event) => event.stopPropagation()}
             >
@@ -406,7 +406,7 @@ export function FolderSaveControl({
                 />
               </div>
 
-              <div className="mt-3 max-h-[32rem] overflow-y-auto px-2 pb-2">
+              <div className="mt-3 max-h-128 overflow-y-auto px-2 pb-2">
                 {filteredFolders.length > 0 && (
                   <section>
                     <h3 className="px-3 py-2 text-sm font-semibold">

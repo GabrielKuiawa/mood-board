@@ -128,6 +128,28 @@ describe("API E2E", () => {
       savedFolderIds: [createdFolder.body.data.id],
     });
 
+    const folderDetails = await api
+      .get(`/api/folder/${createdFolder.body.data.id}`)
+      .set("Authorization", authorization)
+      .expect(200);
+    expect(folderDetails.body).toMatchObject({
+      id: createdFolder.body.data.id,
+      name: "Architecture",
+      pinCount: 1,
+      previewPins: [
+        {
+          id: createdPin.body.data.id,
+          title: "Modern architecture",
+        },
+      ],
+      pins: [
+        {
+          id: createdPin.body.data.id,
+          title: "Modern architecture",
+        },
+      ],
+    });
+
     const favoritesFolder = await api
       .post("/api/folder")
       .set("Authorization", authorization)

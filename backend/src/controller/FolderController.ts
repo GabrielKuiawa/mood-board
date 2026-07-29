@@ -82,7 +82,7 @@ export class FolderController {
         validateId(req.params.id),
         getAuthenticatedUserId(req),
       );
-      res.json(this.serializeFolder(folder));
+      res.json(this.serializeFolder(folder, true));
     } catch (error) {
       next(error);
     }
@@ -161,11 +161,20 @@ export class FolderController {
     }
   }
 
-  private serializeFolder(folder: Folder) {
+  private serializeFolder(folder: Folder, includePins = false) {
+    const pins = folder.getPins().map((pin) => ({
+      id: pin.getId(),
+      title: pin.getTitle(),
+      pathImage: pin.getPathImage(),
+      description: pin.getDescription(),
+    }));
+
     return {
       id: folder.getId(),
       name: folder.getName(),
-      pinCount: folder.getPins().length,
+      pinCount: pins.length,
+      previewPins: pins.slice(0, 4),
+      ...(includePins && { pins }),
     };
   }
 }

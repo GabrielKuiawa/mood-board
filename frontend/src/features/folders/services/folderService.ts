@@ -4,6 +4,18 @@ export type Folder = {
   id: string;
   name: string;
   pinCount: number;
+  previewPins: FolderPin[];
+};
+
+export type FolderPin = {
+  id: string;
+  title: string;
+  pathImage: string;
+  description: string;
+};
+
+export type FolderDetails = Folder & {
+  pins: FolderPin[];
 };
 
 export type FolderPage = {
@@ -17,6 +29,8 @@ type FolderResponse = {
 
 export const folderQueryKey = (userId?: string) =>
   ["folders", "mine", userId] as const;
+export const folderDetailsQueryKey = (folderId: string) =>
+  ["folders", "detail", folderId] as const;
 
 export const folderService = {
   getMine(signal?: AbortSignal): Promise<FolderPage> {
@@ -33,6 +47,22 @@ export const folderService = {
       json: { name },
       authenticated: true,
       errorMessage: "Não foi possível criar a pasta.",
+    });
+  },
+
+  getById(folderId: string, signal?: AbortSignal): Promise<FolderDetails> {
+    return apiRequest<FolderDetails>(`/api/folder/${folderId}`, {
+      signal,
+      authenticated: true,
+      errorMessage: "Não foi possível carregar esta pasta.",
+    });
+  },
+
+  delete(folderId: string): Promise<void> {
+    return apiRequest<void>(`/api/folder/${folderId}`, {
+      method: "DELETE",
+      authenticated: true,
+      errorMessage: "Não foi possível excluir a pasta.",
     });
   },
 
