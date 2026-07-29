@@ -204,9 +204,9 @@ Não edite uma migration que já foi aplicada. Crie uma nova migration para cada
 
 ### Dados de demonstração
 
-O seeder cria 24 usuários, 240 pastas e 1.000 Pins para desenvolvimento ou
+O seeder cria 12 usuários, 120 pastas e 500 Pins para desenvolvimento ou
 demonstração. Antes de gravar os registros, ele baixa as imagens-fonte e envia
-os 24 avatares e as 1.000 imagens dos Pins ao Spaces, sob os diretórios
+os 12 avatares e as 500 imagens dos Pins ao Spaces, sob os diretórios
 `seed/users` e `seed/pins`. Ele executa as migrations pendentes e substitui
 somente as contas com e-mails reservados pelo próprio seed, portanto pode ser
 executado novamente sem duplicar dados. Depois de uma execução bem-sucedida, os
@@ -214,7 +214,7 @@ objetos pertencentes à execução anterior são removidos do storage.
 
 A conta pública `ana.seed@example.com` sempre recebe a senha `MoodBoard123!` e
 um token de somente leitura. Defina em `SEED_USER_PASSWORD` uma senha privada de
-pelo menos 8 caracteres para os outros sete usuários. Execute o seed local com
+pelo menos 8 caracteres para os outros 11 usuários. Execute o seed local com
 o TypeScript:
 
 ```bash
@@ -238,7 +238,7 @@ Trigger:     Before every deploy
 
 O job precisa receber `DATABASE_URL` e `SEED_USER_PASSWORD`. Como a configuração atual do backend valida todas as variáveis ao carregar o DataSource, compartilhe também `PORT`, `CORS_ORIGIN`, `JWT_SECRET` e as variáveis `SPACES_*` com o job. Marque `DATABASE_URL`, `SEED_USER_PASSWORD`, `JWT_SECRET` e `SPACES_SECRET_ACCESS_KEY` como secrets.
 
-Depois que esse recurso for salvo no app `mood-board`, o workflow de CD existente preserva o job remoto e cada deploy executa migrations e seed antes de publicar a nova versão. Se o seed falhar, a publicação não deve prosseguir. A senha dos outros 23 usuários é definida em `SEED_USER_PASSWORD` e não é registrada nos logs.
+Depois que esse recurso for salvo no app `mood-board`, o workflow de CD existente preserva o job remoto e cada deploy executa migrations e seed antes de publicar a nova versão. Se o seed falhar, a publicação não deve prosseguir. A senha dos outros 11 usuários é definida em `SEED_USER_PASSWORD` e não é registrada nos logs.
 
 ## Testes
 

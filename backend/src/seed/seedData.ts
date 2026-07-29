@@ -67,67 +67,27 @@ export const seedUsers = [
     email: "lucas.seed@example.com",
     pathImageUser: "https://i.pravatar.cc/160?img=14",
   },
-  {
-    name: "Marina Gomes",
-    email: "marina.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=23",
-  },
-  {
-    name: "Nicolas Barros",
-    email: "nicolas.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=15",
-  },
-  {
-    name: "Olívia Cardoso",
-    email: "olivia.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=29",
-  },
-  {
-    name: "Paulo Mendes",
-    email: "paulo.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=33",
-  },
-  {
-    name: "Queila Teixeira",
-    email: "queila.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=45",
-  },
-  {
-    name: "Rafael Moreira",
-    email: "rafael.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=52",
-  },
-  {
-    name: "Sofia Campos",
-    email: "sofia.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=49",
-  },
-  {
-    name: "Tiago Freitas",
-    email: "tiago.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=56",
-  },
-  {
-    name: "Úrsula Duarte",
-    email: "ursula.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=48",
-  },
-  {
-    name: "Vitor Peixoto",
-    email: "vitor.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=59",
-  },
-  {
-    name: "Wesley Correia",
-    email: "wesley.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=65",
-  },
-  {
-    name: "Yasmin Araújo",
-    email: "yasmin.seed@example.com",
-    pathImageUser: "https://i.pravatar.cc/160?img=41",
-  },
 ] as const;
+
+const retiredSeedUserEmails = [
+  "marina.seed@example.com",
+  "nicolas.seed@example.com",
+  "olivia.seed@example.com",
+  "paulo.seed@example.com",
+  "queila.seed@example.com",
+  "rafael.seed@example.com",
+  "sofia.seed@example.com",
+  "tiago.seed@example.com",
+  "ursula.seed@example.com",
+  "vitor.seed@example.com",
+  "wesley.seed@example.com",
+  "yasmin.seed@example.com",
+] as const;
+
+export const seedAccountEmails = [
+  ...seedUsers.map((user) => user.email),
+  ...retiredSeedUserEmails,
+];
 
 export const seedFolderNames = [
   "Animais",
@@ -168,7 +128,7 @@ export const seedFolderNames = [
   "Trabalho",
 ] as const;
 
-const SEED_SOURCE_IMAGE_COUNT = 1_000;
+const SEED_SOURCE_IMAGE_COUNT = 500;
 const IMAGE_THEMES = [
   "Arquitetura",
   "Arte",
@@ -197,6 +157,16 @@ const IMAGE_STYLES = [
   "orgânica",
   "vibrante",
 ] as const;
+const IMAGE_DIMENSIONS = [
+  { width: 720, height: 960 },
+  { width: 960, height: 720 },
+  { width: 800, height: 800 },
+  { width: 720, height: 1_080 },
+  { width: 1_080, height: 720 },
+  { width: 900, height: 1_200 },
+  { width: 1_200, height: 900 },
+  { width: 1_080, height: 1_350 },
+] as const;
 
 export const seedPins: SeedPinData[] = Array.from(
   { length: SEED_SOURCE_IMAGE_COUNT },
@@ -208,10 +178,11 @@ export const seedPins: SeedPinData[] = Array.from(
         Math.floor(index / IMAGE_THEMES.length) % IMAGE_STYLES.length
       ];
     const paddedNumber = String(number).padStart(4, "0");
+    const dimensions = IMAGE_DIMENSIONS[index % IMAGE_DIMENSIONS.length];
 
     return {
       title: `${theme}: inspiração ${style} ${paddedNumber}`,
-      pathImage: `https://picsum.photos/seed/mood-board-${paddedNumber}/1080/1350`,
+      pathImage: `https://picsum.photos/seed/mood-board-${paddedNumber}/${dimensions.width}/${dimensions.height}`,
       description: `Referência visual ${style} de ${theme.toLowerCase()} para projetos e coleções criativas.`,
     };
   },

@@ -6,9 +6,14 @@ import {
 } from "../../../src/seed/seedImages";
 
 describe("seed image helpers", () => {
-  it("provides one distinct source URL for each of the 1,000 pins", () => {
-    expect(seedPins).toHaveLength(1_000);
-    expect(new Set(seedPins.map((pin) => pin.pathImage)).size).toBe(1_000);
+  it("provides 500 distinct source URLs with varied dimensions", () => {
+    expect(seedPins).toHaveLength(500);
+    expect(new Set(seedPins.map((pin) => pin.pathImage)).size).toBe(500);
+    expect(
+      new Set(
+        seedPins.map((pin) => pin.pathImage.match(/\/(\d+)\/(\d+)$/)?.[0]),
+      ).size,
+    ).toBe(8);
   });
 
   it("downloads each source once and creates one stored object per item", async () => {
