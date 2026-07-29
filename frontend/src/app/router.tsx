@@ -11,9 +11,11 @@ import {
   redirectAuthenticatedSession,
   requireAuthenticatedSession,
 } from "@/features/auth/routeGuards";
-import { ImageDetailsPage } from "@/features/images/pages/ImageDetailsPage";
-import { ImageFeedPage } from "@/features/images/pages/ImageFeedPage";
-import { CreatePinPage } from "@/features/images/pages/CreatePinPage";
+import { FolderDetailsPage } from "@/features/folders/pages/FolderDetailsPage";
+import { SavedFoldersPage } from "@/features/folders/pages/SavedFoldersPage";
+import { PinDetailsPage } from "@/features/pins/pages/PinDetailsPage";
+import { PinFeedPage } from "@/features/pins/pages/PinFeedPage";
+import { CreatePinPage } from "@/features/pins/pages/CreatePinPage";
 import { LandingPage } from "@/features/landing/pages/LandingPage";
 
 const rootRoute = createRootRoute({
@@ -37,7 +39,7 @@ const indexRoute = createRoute({
 const feedRoute = createRoute({
   getParentRoute: () => authenticatedRoute,
   path: "/feed",
-  component: ImageFeedPage,
+  component: PinFeedPage,
 });
 
 const createPinRoute = createRoute({
@@ -46,10 +48,22 @@ const createPinRoute = createRoute({
   component: CreatePinPage,
 });
 
-export const imageDetailsRoute = createRoute({
+const savedFoldersRoute = createRoute({
   getParentRoute: () => authenticatedRoute,
-  path: "/images/$imageId",
-  component: ImageDetailsPage,
+  path: "/saved",
+  component: SavedFoldersPage,
+});
+
+const folderDetailsRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: "/saved/$folderId",
+  component: FolderDetailsPage,
+});
+
+export const pinDetailsRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: "/pins/$pinId",
+  component: PinDetailsPage,
 });
 
 const loginRoute = createRoute({
@@ -71,7 +85,9 @@ const routeTree = rootRoute.addChildren([
   authenticatedRoute.addChildren([
     feedRoute,
     createPinRoute,
-    imageDetailsRoute,
+    savedFoldersRoute,
+    folderDetailsRoute,
+    pinDetailsRoute,
   ]),
   loginRoute,
   registerRoute,

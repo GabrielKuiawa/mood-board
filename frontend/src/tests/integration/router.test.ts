@@ -14,7 +14,9 @@ describe("application router", () => {
         "/create",
         "/login",
         "/signup",
-        "/images/$imageId",
+        "/pins/$pinId",
+        "/saved",
+        "/saved/$folderId",
       ]),
     );
   });

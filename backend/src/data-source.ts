@@ -2,13 +2,17 @@ import "dotenv/config";
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { User } from "./models/User";
-import Image from "./models/Image";
-import Category from "./models/Category";
+import Folder from "./models/Folder";
+import Pin from "./models/Pin";
 import { config } from "./config";
 import { InitialSchema1720760000000 } from "./migration/1720760000000-InitialSchema";
 import { NormalizeConstraintNames1720760000001 } from "./migration/1720760000001-NormalizeConstraintNames";
 import { CascadeCategoryImages1720760000002 } from "./migration/1720760000002-CascadeCategoryImages";
 import { AddImageTitle1720760000003 } from "./migration/1720760000003-AddImageTitle";
+import { RenameImagesAndCategories1720760000004 } from "./migration/1720760000004-RenameImagesAndCategories";
+import { AddPinLikes1720760000005 } from "./migration/1720760000005-AddPinLikes";
+import { AddPinComments1720760000006 } from "./migration/1720760000006-AddPinComments";
+import Comment from "./models/Comment";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -21,12 +25,15 @@ export const AppDataSource = new DataSource({
   ssl: config.database.ssl ? { rejectUnauthorized: false } : undefined,
   synchronize: false,
   logging: false,
-  entities: [User, Image, Category],
+  entities: [User, Pin, Folder, Comment],
   migrations: [
     InitialSchema1720760000000,
     NormalizeConstraintNames1720760000001,
     CascadeCategoryImages1720760000002,
     AddImageTitle1720760000003,
+    RenameImagesAndCategories1720760000004,
+    AddPinLikes1720760000005,
+    AddPinComments1720760000006,
   ],
   subscribers: [],
 });

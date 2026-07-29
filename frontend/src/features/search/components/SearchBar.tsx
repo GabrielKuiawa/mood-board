@@ -1,13 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  ImageIcon,
-  Layers3,
-  LoaderCircle,
-  Search,
-  UserRound,
-  X,
-} from "lucide-react";
+import { PinIcon, LoaderCircle, Search, UserRound, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,8 +13,7 @@ import { searchService } from "../services/searchService";
 import type { SearchSuggestion, SearchSuggestionType } from "../types";
 
 const suggestionIcons = {
-  image: ImageIcon,
-  category: Layers3,
+  pin: PinIcon,
   user: UserRound,
 } satisfies Record<SearchSuggestionType, typeof Search>;
 
@@ -142,7 +134,7 @@ export function SearchBar() {
         }
         autoComplete="off"
         className="h-12 rounded-2xl border-0 bg-muted pr-20 pl-11 text-base shadow-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder="Pesquise imagens, categorias ou pessoas"
+        placeholder="Pesquise Pins ou pessoas"
         type="search"
         value={inputValue}
         onChange={(event) => {

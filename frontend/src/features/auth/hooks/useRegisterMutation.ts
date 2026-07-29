@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { saveAuthToken } from "@/lib/authTokenStorage";
 import { authService } from "../services/authService";
@@ -6,6 +6,7 @@ import type { RegistrationData } from "../services/authService";
 
 export function useRegisterMutation() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (registrationData: RegistrationData) => {
@@ -23,6 +24,7 @@ export function useRegisterMutation() {
       });
     },
     onSuccess: async ({ token }) => {
+      queryClient.removeQueries();
       saveAuthToken(token);
       await navigate({ to: "/feed" });
     },

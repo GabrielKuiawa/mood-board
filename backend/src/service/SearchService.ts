@@ -1,12 +1,10 @@
-import CategoryRepository from "../repository/CategoryRepository";
-import ImageRepository from "../repository/ImageRepository";
+import PinRepository from "../repository/PinRepository";
 import UserRepository from "../repository/UserRepository";
 import { SearchSuggestion } from "../types/Search";
 
 export class SearchService {
   constructor(
-    private readonly imageRepository: ImageRepository,
-    private readonly categoryRepository: CategoryRepository,
+    private readonly pinRepository: PinRepository,
     private readonly userRepository: UserRepository,
   ) {}
 
@@ -14,39 +12,24 @@ export class SearchService {
     query: string,
     limit: number,
   ): Promise<SearchSuggestion[]> {
-    const perTypeLimit = Math.ceil(limit / 3);
-    const [images, categories, users] = await Promise.all([
-      this.imageRepository.findSuggestions(query, perTypeLimit),
-      this.categoryRepository.findSuggestions(query, perTypeLimit),
+    const perTypeLimit = Math.ceil(limit / 2);
+    const [pins, users] = await Promise.all([
+      this.pinRepository.findSuggestions(query, perTypeLimit),
       this.userRepository.findSuggestions(query, perTypeLimit),
     ]);
 
     const suggestions: SearchSuggestion[] = [];
-    const collectionLength = Math.max(
-      images.length,
-      categories.length,
-      users.length,
-    );
+    const collectionLength = Math.max(pins.length, users.length);
 
     for (let index = 0; index < collectionLength; index += 1) {
-      const image = images[index];
-      if (image) {
+      const pin = pins[index];
+      if (pin) {
         suggestions.push({
-          type: "image",
-          id: image.getId(),
-          label: image.getTitle(),
-          subtitle: `Imagem de ${image.getUser().getName()}`,
-          imageUrl: image.getPathImage(),
-        });
-      }
-
-      const category = categories[index];
-      if (category) {
-        suggestions.push({
-          type: "category",
-          id: category.getId(),
-          label: category.getName(),
-          subtitle: "Categoria",
+          type: "pin",
+          id: pin.getId(),
+          label: pin.getTitle(),
+          subtitle: `Pin de ${pin.getUser().getName()}`,
+          imageUrl: pin.getPathImage(),
         });
       }
 

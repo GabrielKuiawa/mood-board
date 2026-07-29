@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { SearchController } from "../controller/SearchController";
 import { authMiddleware } from "../middlewares/authMiddleware";
-import CategoryRepository from "../repository/CategoryRepository";
-import ImageRepository from "../repository/ImageRepository";
+import PinRepository from "../repository/PinRepository";
 import UserRepository from "../repository/UserRepository";
 import { SearchService } from "../service/SearchService";
 import { BaseRoute } from "./BaseRoute";
@@ -13,11 +12,7 @@ export default class SearchRoute extends BaseRoute {
   constructor() {
     super();
     this.searchController = new SearchController(
-      new SearchService(
-        new ImageRepository(),
-        new CategoryRepository(),
-        new UserRepository(),
-      ),
+      new SearchService(new PinRepository(), new UserRepository()),
     );
     this.initRoutes();
   }

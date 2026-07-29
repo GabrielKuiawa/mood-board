@@ -16,9 +16,12 @@ export async function clearTestDatabase(): Promise<void> {
   await AppDataSource.query("SET FOREIGN_KEY_CHECKS = 0");
 
   try {
-    await AppDataSource.query("DELETE FROM `image_categories_category`");
-    await AppDataSource.query("DELETE FROM `image`");
-    await AppDataSource.query("DELETE FROM `category`");
+    await AppDataSource.query("DELETE FROM `user_liked_comments_comment`");
+    await AppDataSource.query("DELETE FROM `comment`");
+    await AppDataSource.query("DELETE FROM `user_liked_pins_pin`");
+    await AppDataSource.query("DELETE FROM `folder_pins_pin`");
+    await AppDataSource.query("DELETE FROM `pin`");
+    await AppDataSource.query("DELETE FROM `folder`");
     await AppDataSource.query("DELETE FROM `user`");
   } finally {
     await AppDataSource.query("SET FOREIGN_KEY_CHECKS = 1");

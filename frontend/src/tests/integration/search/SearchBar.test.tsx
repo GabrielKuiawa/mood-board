@@ -65,10 +65,10 @@ describe("SearchBar", () => {
         query === "arte"
           ? [
               {
-                type: "category",
-                id: "category-id",
+                type: "pin",
+                id: "pin-id",
                 label: "Arte abstrata",
-                subtitle: "Categoria",
+                subtitle: "Pin de Ana",
               },
             ]
           : [],
@@ -88,8 +88,8 @@ describe("SearchBar", () => {
       JSON.stringify({
         query: "Arte abstrata",
         label: "Arte abstrata",
-        type: "category",
-        id: "category-id",
+        type: "pin",
+        id: "pin-id",
       }),
     );
     expect(mocks.navigate).toHaveBeenCalledWith({ to: "/feed" });

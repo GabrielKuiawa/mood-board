@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { AppDataSource } from "../data-source";
+import { SpacesStorageService } from "../service/SpacesStorageService";
 import { logger } from "../utils/Logger";
 import { seedDatabase } from "./seedDatabase";
 
@@ -20,7 +21,9 @@ async function runSeed(): Promise<void> {
     await AppDataSource.initialize();
     await AppDataSource.runMigrations();
 
-    const result = await seedDatabase(AppDataSource, getSeedUserPassword());
+    const result = await seedDatabase(AppDataSource, getSeedUserPassword(), {
+      storage: new SpacesStorageService(),
+    });
 
     logger.info("Database seed completed", result);
   } catch (error) {

@@ -26,8 +26,8 @@ describe("parseImageUpload", () => {
     const response = await request(createApp())
       .post("/upload")
       .field("title", "Architecture")
-      .field("categoryIds", "category-1")
-      .field("categoryIds", "category-2")
+      .field("folderIds", "folder-1")
+      .field("folderIds", "folder-2")
       .attach("image", Buffer.from("image"), {
         filename: "image.png",
         contentType: "image/png",
@@ -37,7 +37,7 @@ describe("parseImageUpload", () => {
     expect(response.body).toEqual({
       body: {
         title: "Architecture",
-        categoryIds: ["category-1", "category-2"],
+        folderIds: ["folder-1", "folder-2"],
       },
       mimetype: "image/png",
     });

@@ -1,4 +1,4 @@
-export type SearchSuggestionType = "image" | "category" | "user";
+export type SearchSuggestionType = "pin" | "user";
 
 export type SearchSuggestion = {
   type: SearchSuggestionType;

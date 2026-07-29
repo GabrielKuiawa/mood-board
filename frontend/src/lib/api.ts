@@ -65,6 +65,10 @@ export async function apiRequest<ResponseBody>(
     ...(requestBody !== undefined && { body: requestBody }),
   });
 
+  if (response.status === 204) {
+    return undefined as ResponseBody;
+  }
+
   const body = (await response.json().catch(() => ({}))) as unknown;
 
   if (!response.ok) {

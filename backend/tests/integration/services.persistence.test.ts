@@ -3,11 +3,11 @@ import * as jwt from "jsonwebtoken";
 import { AppDataSource } from "../../src/data-source";
 import { UserRole } from "../../src/enum/UserRole";
 import ForbiddenException from "../../src/exception/ForbiddenException";
-import CategoryRepository from "../../src/repository/CategoryRepository";
-import ImageRepository from "../../src/repository/ImageRepository";
+import FolderRepository from "../../src/repository/FolderRepository";
+import PinRepository from "../../src/repository/PinRepository";
 import UserRepository from "../../src/repository/UserRepository";
-import { CategoryService } from "../../src/service/CategoryService";
-import { ImageService } from "../../src/service/ImageService";
+import { FolderService } from "../../src/service/FolderService";
+import { PinService } from "../../src/service/PinService";
 import { UserService } from "../../src/service/UserService";
 import {
   clearTestDatabase,
@@ -17,22 +17,22 @@ import {
 
 describe("integration between services, repositories, and MySQL", () => {
   let userService: UserService;
-  let categoryService: CategoryService;
-  let imageService: ImageService;
+  let folderService: FolderService;
+  let pinService: PinService;
 
   beforeAll(async () => {
     await initializeTestDatabase();
 
     const userRepository = new UserRepository();
-    const categoryRepository = new CategoryRepository();
-    const imageRepository = new ImageRepository();
+    const folderRepository = new FolderRepository();
+    const pinRepository = new PinRepository();
 
     userService = new UserService(userRepository);
-    categoryService = new CategoryService(categoryRepository, userRepository);
-    imageService = new ImageService(
-      imageRepository,
+    folderService = new FolderService(folderRepository, userRepository);
+    pinService = new PinService(
+      pinRepository,
       userRepository,
-      categoryRepository,
+      folderRepository,
     );
   });
 
@@ -62,7 +62,7 @@ describe("integration between services, repositories, and MySQL", () => {
     });
   });
 
-  it("persists relationships and removes only the association when deleting a category", async () => {
+  it("persists relationships and removes only the association when deleting a folder", async () => {
     const user = await userService.saveUser(
       "Owner",
       "owner@example.com",
@@ -73,33 +73,28 @@ describe("integration between services, repositories, and MySQL", () => {
       userId: user.getId(),
       role: UserRole.USER,
     };
-    const category = await categoryService.saveCategory(
-      "Architecture",
-      user.getId(),
-    );
-    const image = await imageService.saveImage(
+    const folder = await folderService.saveFolder("Architecture", user.getId());
+    const pin = await pinService.savePin(
       "Modern architecture",
       "/images/house.png",
       "Modern house",
       user.getId(),
-      [category.getId()],
+      [folder.getId()],
     );
 
-    const persistedImage = await imageService.getImageById(image.getId());
-    expect(persistedImage.getUser().getId()).toBe(user.getId());
-    expect(persistedImage.getCategories()).toHaveLength(1);
-    expect(persistedImage.getCategories()[0].getName()).toBe("Architecture");
+    const persistedPin = await pinService.getPinById(pin.getId());
+    expect(persistedPin.getUser().getId()).toBe(user.getId());
+    expect(persistedPin.getFolders()).toHaveLength(1);
+    expect(persistedPin.getFolders()[0].getName()).toBe("Architecture");
 
-    await categoryService.deleteCategory(category.getId(), authenticatedUser);
+    await folderService.deleteFolder(folder.getId(), authenticatedUser);
 
-    const imageAfterCategoryDeletion = await imageService.getImageById(
-      image.getId(),
-    );
-    expect(imageAfterCategoryDeletion.getCategories()).toEqual([]);
-    expect(await AppDataSource.getRepository("image").count()).toBe(1);
+    const pinAfterFolderDeletion = await pinService.getPinById(pin.getId());
+    expect(pinAfterFolderDeletion.getFolders()).toEqual([]);
+    expect(await AppDataSource.getRepository("pin").count()).toBe(1);
   });
 
-  it("rejects a category owned by another user at the service layer", async () => {
+  it("rejects a folder owned by another user at the service layer", async () => {
     const owner = await userService.saveUser(
       "Owner",
       "owner@example.com",
@@ -112,21 +107,18 @@ describe("integration between services, repositories, and MySQL", () => {
       "password123",
       "/users/other.png",
     );
-    const category = await categoryService.saveCategory(
-      "Private",
-      other.getId(),
-    );
+    const folder = await folderService.saveFolder("Private", other.getId());
 
     await expect(
-      imageService.saveImage(
-        "Invalid image",
+      pinService.savePin(
+        "Invalid pin",
         "/images/invalid.png",
         "Invalid reference",
         owner.getId(),
-        [category.getId()],
+        [folder.getId()],
       ),
     ).rejects.toBeInstanceOf(ForbiddenException);
 
-    expect(await AppDataSource.getRepository("image").count()).toBe(0);
+    expect(await AppDataSource.getRepository("pin").count()).toBe(0);
   });
 });

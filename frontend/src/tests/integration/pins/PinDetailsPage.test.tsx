@@ -1,0 +1,329 @@
+import { act, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createPin, createPinPage } from "@/tests/fixtures/pins";
+import { getLatestIntersectionObserver } from "@/tests/mocks/browserObservers";
+import { renderWithProviders } from "@/tests/utils/renderWithProviders";
+
+const mocks = vi.hoisted(() => ({
+  getById: vi.fn(),
+  getPage: vi.fn(),
+  getComments: vi.fn(),
+}));
+
+vi.mock("@tanstack/react-router", () => ({
+  getRouteApi: () => ({
+    useParams: () => ({ pinId: "reference-id" }),
+  }),
+  Link: ({ children, to }: { children: ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
+}));
+
+vi.mock("@/features/pins/services/pinService", () => ({
+  initialPinsPage: "/api/pin?page=1&limit=20",
+  pinService: { getById: mocks.getById, getPage: mocks.getPage },
+}));
+
+vi.mock("@/features/folders/services/folderService", () => ({
+  folderQueryKey: (userId?: string) => ["folders", "mine", userId],
+  folderService: {
+    getMine: vi.fn().mockResolvedValue({
+      data: [{ id: "folder-id", name: "Minha pasta", pinCount: 0 }],
+    }),
+    create: vi.fn(),
+    savePin: vi.fn(),
+    removePin: vi.fn(),
+  },
+}));
+
+vi.mock("@/features/auth/hooks/useCurrentUserQuery", () => ({
+  useCurrentUserQuery: () => ({ data: { id: "user-id" } }),
+}));
+
+vi.mock("@/features/comments/services/commentService", () => ({
+  commentsQueryKey: (pinId: string) => ["comments", pinId],
+  commentService: {
+    getAll: mocks.getComments,
+    create: vi.fn(),
+    delete: vi.fn(),
+    like: vi.fn(),
+    unlike: vi.fn(),
+  },
+}));
+
+import { PinDetailsPage } from "@/features/pins/pages/PinDetailsPage";
+
+describe("PinDetailsPage", () => {
+  beforeEach(() => {
+    mocks.getById.mockReset();
+    mocks.getPage.mockReset().mockResolvedValue(createPinPage({ data: [] }));
+    mocks.getComments.mockReset().mockResolvedValue({ data: [] });
+  });
+
+  it("shows a loading message while the Pin is pending", () => {
+    mocks.getById.mockReturnValue(new Promise(() => {}));
+
+    renderWithProviders(<PinDetailsPage />);
+
+    expect(screen.getByText("Carregando Pin...")).toBeVisible();
+  });
+
+  it("shows the request error", async () => {
+    mocks.getById.mockRejectedValue(
+      new Error("Não foi possível carregar o Pin."),
+    );
+
+    renderWithProviders(<PinDetailsPage />);
+
+    expect(
+      await screen.findByText("Não foi possível carregar o Pin."),
+    ).toBeVisible();
+  });
+
+  it("renders the Pin, author, folder selector, and return link", async () => {
+    mocks.getById.mockResolvedValue(
+      createPin({
+        id: "reference-id",
+        title: "Arquitetura brutalista",
+        description: "Edifício de concreto aparente",
+        folders: [
+          { id: "architecture", name: "Arquitetura" },
+          { id: "design", name: "Design" },
+        ],
+      }),
+    );
+
+    renderWithProviders(<PinDetailsPage />);
+
+    expect(
+      await screen.findByRole("heading", { name: "Arquitetura brutalista" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("img", { name: "Edifício de concreto aparente" }),
+    ).toBeVisible();
+    expect(screen.getByText("Maria Silva")).toBeVisible();
+    expect(
+      await screen.findByRole("button", { name: /Minha pasta/ }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("textbox", { name: "Adicionar comentário" }),
+    ).toBeVisible();
+    expect(
+      screen
+        .getByRole("heading", { name: "Arquitetura brutalista" })
+        .closest('[role="article"]'),
+    ).toHaveClass(
+      "lg:aspect-square",
+      "lg:grid",
+      "lg:grid-cols-2",
+      "lg:grid-rows-12",
+    );
+    expect(screen.getByRole("link", { name: "Voltar" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+    expect(
+      screen.getByRole("article").parentElement?.parentElement,
+    ).toHaveClass("col-span-full", "md:col-span-4");
+    expect(mocks.getById).toHaveBeenCalledWith(
+      "reference-id",
+      expect.any(AbortSignal),
+    );
+  });
+
+  it("keeps the standard detail layout and exposes the comment count", async () => {
+    mocks.getById.mockResolvedValue(
+      createPin({ id: "reference-id", commentCount: 3 }),
+    );
+    mocks.getComments.mockResolvedValue({
+      data: [
+        {
+          id: "comment-id",
+          content: "Uma ótima referência.",
+          createdAt: "2026-07-28T12:00:00.000Z",
+          author: {
+            id: "author-id",
+            name: "Ana Martins",
+            pathImageUser: "https://example.com/ana.jpg",
+          },
+          likeCount: 2,
+          likedByCurrentUser: false,
+          canDelete: false,
+        },
+      ],
+    });
+
+    renderWithProviders(<PinDetailsPage />);
+
+    expect(
+      await screen.findByRole("button", { name: "3 comentários" }),
+    ).toBeVisible();
+    expect(await screen.findByText("Uma ótima referência.")).toBeVisible();
+    expect(
+      screen
+        .getByRole("heading", { name: "Referência" })
+        .closest('[role="article"]'),
+    ).toHaveClass("lg:grid", "lg:grid-cols-2");
+  });
+
+  it("does not expose folders as content tags", async () => {
+    mocks.getById.mockResolvedValue(
+      createPin({ folders: [{ id: "architecture", name: "Arquitetura" }] }),
+    );
+
+    renderWithProviders(<PinDetailsPage />);
+
+    expect(
+      await screen.findByRole("heading", { name: "Referência" }),
+    ).toBeVisible();
+    expect(screen.queryByText("Arquitetura")).not.toBeInTheDocument();
+  });
+
+  it("opens and closes the expanded image viewer", async () => {
+    const user = userEvent.setup();
+    mocks.getById.mockResolvedValue(
+      createPin({ id: "reference-id", title: "Paisagem ampliada" }),
+    );
+
+    renderWithProviders(<PinDetailsPage />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Expandir imagem" }),
+    );
+    expect(
+      screen.getByRole("dialog", {
+        name: "Visualização ampliada de Paisagem ampliada",
+      }),
+    ).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", { name: "Fechar imagem ampliada" }),
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("opens the share dialog and copies the Pin and image links", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    mocks.getById.mockResolvedValue(createPin({ id: "reference-id" }));
+
+    renderWithProviders(<PinDetailsPage />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Compartilhar" }),
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "Compartilhar Pin" }),
+    ).toBeVisible();
+    expect(screen.getByLabelText("Link do Pin")).toHaveValue(
+      new URL("/pins/reference-id", window.location.origin).toString(),
+    );
+    expect(screen.getByLabelText("URL da imagem")).toHaveValue(
+      "https://example.com/image.jpg",
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Copiar Link do Pin" }),
+    );
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith(
+        new URL("/pins/reference-id", window.location.origin).toString(),
+      ),
+    );
+    expect(
+      screen.getByRole("button", { name: "Copiado Link do Pin" }),
+    ).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", { name: "Copiar URL da imagem" }),
+    );
+    expect(writeText).toHaveBeenLastCalledWith("https://example.com/image.jpg");
+  });
+
+  it("downloads the Pin image with a readable file name", async () => {
+    const user = userEvent.setup();
+    const imageBlob = new Blob(["image"], { type: "image/jpeg" });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(imageBlob),
+    });
+    const createObjectUrlMock = vi.fn().mockReturnValue("blob:pin-image");
+    const revokeObjectUrlMock = vi.fn();
+    const linkClickMock = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => undefined);
+
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: createObjectUrlMock,
+      revokeObjectURL: revokeObjectUrlMock,
+    });
+    mocks.getById.mockResolvedValue(
+      createPin({
+        id: "reference-id",
+        title: "Café em São Paulo",
+        pathImage: "https://example.com/photo",
+      }),
+    );
+
+    renderWithProviders(<PinDetailsPage />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Baixar imagem" }),
+    );
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith("https://example.com/photo"),
+    );
+    expect(createObjectUrlMock).toHaveBeenCalledWith(imageBlob);
+    expect(linkClickMock).toHaveBeenCalledOnce();
+    expect(revokeObjectUrlMock).toHaveBeenCalledWith("blob:pin-image");
+
+    linkClickMock.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it("loads more masonry items when the pagination marker is visible", async () => {
+    mocks.getById.mockResolvedValue(createPin({ id: "reference-id" }));
+    mocks.getPage
+      .mockResolvedValueOnce(
+        createPinPage({
+          data: [createPin({ id: "first", title: "Primeira ideia" })],
+          next: "/api/pin?page=2&limit=20",
+          total: 2,
+          totalPages: 2,
+        }),
+      )
+      .mockResolvedValueOnce(
+        createPinPage({
+          data: [createPin({ id: "second", title: "Segunda ideia" })],
+          page: 2,
+          previous: "/api/pin?page=1&limit=20",
+          total: 2,
+          totalPages: 2,
+        }),
+      );
+
+    renderWithProviders(<PinDetailsPage />);
+
+    await screen.findByRole("heading", { name: "Referência" });
+    await waitFor(() => expect(mocks.getPage).toHaveBeenCalledOnce());
+
+    act(() => getLatestIntersectionObserver().trigger());
+
+    await waitFor(() => expect(mocks.getPage).toHaveBeenCalledTimes(2));
+    expect(mocks.getPage).toHaveBeenLastCalledWith(
+      "/api/pin?page=2&limit=20",
+      expect.any(AbortSignal),
+    );
+  });
+});

@@ -41,7 +41,7 @@ describe("API E2E", () => {
     jest.restoreAllMocks();
   });
 
-  it("runs the registration, login, category, and image flow over HTTP", async () => {
+  it("runs the registration, login, folder, and Pin flow over HTTP", async () => {
     const registration = await api
       .post("/api/user")
       .set("X-Request-Id", "e2e-registration")
@@ -84,51 +84,113 @@ describe("API E2E", () => {
       role: UserRole.USER,
     });
 
-    const createdCategory = await api
-      .post("/api/category")
+    const createdFolder = await api
+      .post("/api/folder")
       .set("Authorization", authorization)
       .send({ name: "Architecture" });
-    expect(createdCategory.status).toBe(201);
+    expect(createdFolder.status).toBe(201);
 
-    const ownedCategories = await api
-      .get("/api/category/mine")
+    const ownedFolders = await api
+      .get("/api/folder/mine")
       .set("Authorization", authorization);
-    expect(ownedCategories.status).toBe(200);
-    expect(ownedCategories.body).toMatchObject({
+    expect(ownedFolders.status).toBe(200);
+    expect(ownedFolders.body).toMatchObject({
       data: [
         {
-          id: createdCategory.body.data.id,
+          id: createdFolder.body.data.id,
           name: "Architecture",
         },
       ],
       meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
     });
 
-    const createdImage = await api
-      .post("/api/image")
+    const createdPin = await api
+      .post("/api/pin")
       .set("Authorization", authorization)
       .field("title", "Modern architecture")
       .field("description", "Modern house")
-      .field("categoryIds", createdCategory.body.data.id)
+      .field("folderIds", createdFolder.body.data.id)
       .attach("image", TEST_PNG, {
         filename: "house.png",
         contentType: "image/png",
       });
-    expect(createdImage.status).toBe(201);
-    expect(createdImage.body.data).toMatchObject({
+    expect(createdPin.status).toBe(201);
+    expect(createdPin.body.data).toMatchObject({
       title: "Modern architecture",
       pathImage: `https://test-mood-board-media.nyc3.cdn.digitaloceanspaces.com/test/images/${registration.body.data.id}/test-2.png`,
       description: "Modern house",
-      categories: [
+      folders: [
         {
-          id: createdCategory.body.data.id,
+          id: createdFolder.body.data.id,
           name: "Architecture",
+        },
+      ],
+      savedFolderIds: [createdFolder.body.data.id],
+    });
+
+    const folderDetails = await api
+      .get(`/api/folder/${createdFolder.body.data.id}`)
+      .set("Authorization", authorization)
+      .expect(200);
+    expect(folderDetails.body).toMatchObject({
+      id: createdFolder.body.data.id,
+      name: "Architecture",
+      pinCount: 1,
+      previewPins: [
+        {
+          id: createdPin.body.data.id,
+          title: "Modern architecture",
+        },
+      ],
+      pins: [
+        {
+          id: createdPin.body.data.id,
+          title: "Modern architecture",
         },
       ],
     });
 
+    const favoritesFolder = await api
+      .post("/api/folder")
+      .set("Authorization", authorization)
+      .send({ name: "Favorites" })
+      .expect(201);
+
+    await api
+      .post(
+        `/api/folder/${favoritesFolder.body.data.id}/pins/${createdPin.body.data.id}`,
+      )
+      .set("Authorization", authorization)
+      .expect(200);
+
+    const pinSavedInTwoFolders = await api
+      .get(`/api/pin/${createdPin.body.data.id}`)
+      .set("Authorization", authorization)
+      .expect(200);
+    expect(pinSavedInTwoFolders.body.savedFolderIds).toEqual(
+      expect.arrayContaining([
+        createdFolder.body.data.id,
+        favoritesFolder.body.data.id,
+      ]),
+    );
+
+    await api
+      .delete(
+        `/api/folder/${favoritesFolder.body.data.id}/pins/${createdPin.body.data.id}`,
+      )
+      .set("Authorization", authorization)
+      .expect(204);
+
+    const pinRemovedFromFavorites = await api
+      .get(`/api/pin/${createdPin.body.data.id}`)
+      .set("Authorization", authorization)
+      .expect(200);
+    expect(pinRemovedFromFavorites.body.savedFolderIds).toEqual([
+      createdFolder.body.data.id,
+    ]);
+
     const authenticatedFeed = await api
-      .get("/api/image?page=1&limit=10")
+      .get("/api/pin?page=1&limit=10")
       .set("Authorization", authorization);
     expect(authenticatedFeed.status).toBe(200);
     expect(authenticatedFeed.body.meta).toMatchObject({
@@ -140,7 +202,7 @@ describe("API E2E", () => {
       previous: null,
     });
     expect(authenticatedFeed.body.data).toHaveLength(1);
-    expect(authenticatedFeed.body.data[0].id).toBe(createdImage.body.data.id);
+    expect(authenticatedFeed.body.data[0].id).toBe(createdPin.body.data.id);
     expect(authenticatedFeed.body.data[0].author).toEqual({
       id: registration.body.data.id,
       name: "Gabriel",
@@ -148,18 +210,20 @@ describe("API E2E", () => {
         "https://test-mood-board-media.nyc3.cdn.digitaloceanspaces.com/test/users/test-1.png",
     });
 
-    for (const imageNumber of [2, 3]) {
-      await api
-        .post("/api/image")
+    const additionalPinIds: string[] = [];
+    for (const pinNumber of [2, 3]) {
+      const additionalPin = await api
+        .post("/api/pin")
         .set("Authorization", authorization)
-        .field("title", `Architecture ${imageNumber}`)
-        .field("description", `Modern house ${imageNumber}`)
-        .field("categoryIds", createdCategory.body.data.id)
+        .field("title", `Architecture ${pinNumber}`)
+        .field("description", `Modern house ${pinNumber}`)
+        .field("folderIds", createdFolder.body.data.id)
         .attach("image", TEST_PNG, {
-          filename: `house-${imageNumber}.png`,
+          filename: `house-${pinNumber}.png`,
           contentType: "image/png",
         })
         .expect(201);
+      additionalPinIds.push(additionalPin.body.data.id);
     }
 
     const suggestions = await api
@@ -169,45 +233,41 @@ describe("API E2E", () => {
     expect(suggestions.body.data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          type: "image",
-          id: createdImage.body.data.id,
+          type: "pin",
+          id: createdPin.body.data.id,
           label: "Modern architecture",
-        }),
-        expect.objectContaining({
-          type: "category",
-          id: createdCategory.body.data.id,
-          label: "Architecture",
         }),
       ]),
     );
+    expect(suggestions.body.data).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: "folder" })]),
+    );
 
-    const categoryResults = await api
-      .get(
-        `/api/image?page=1&limit=10&type=category&id=${createdCategory.body.data.id}`,
-      )
+    const exactPinResults = await api
+      .get(`/api/pin?page=1&limit=10&type=pin&id=${createdPin.body.data.id}`)
       .set("Authorization", authorization);
-    expect(categoryResults.status).toBe(200);
-    expect(categoryResults.body.data).toHaveLength(3);
+    expect(exactPinResults.status).toBe(200);
+    expect(exactPinResults.body.data).toHaveLength(1);
 
     const creatorResults = await api
-      .get("/api/image?page=1&limit=10&q=gabriel")
+      .get("/api/pin?page=1&limit=10&q=gabriel")
       .set("Authorization", authorization);
     expect(creatorResults.status).toBe(200);
     expect(creatorResults.body.data).toHaveLength(3);
 
     const deployedOrigin = "https://api.mood-board.gabizin.me";
     const firstFeedPage = await api
-      .get("/api/image?page=1&limit=2")
+      .get("/api/pin?page=1&limit=2")
       .set("Authorization", authorization)
       .set("X-Forwarded-Host", "api.mood-board.gabizin.me")
       .set("X-Forwarded-Proto", "https");
     expect(firstFeedPage.body.meta).toMatchObject({
-      next: `${deployedOrigin}/api/image?page=2&limit=2`,
+      next: `${deployedOrigin}/api/pin?page=2&limit=2`,
       previous: null,
     });
 
     const secondFeedPage = await api
-      .get("/api/image?page=2&limit=2")
+      .get("/api/pin?page=2&limit=2")
       .set("Authorization", authorization)
       .set("X-Forwarded-Host", "api.mood-board.gabizin.me")
       .set("X-Forwarded-Proto", "https");
@@ -219,31 +279,40 @@ describe("API E2E", () => {
       total: 3,
       totalPages: 2,
       next: null,
-      previous: `${deployedOrigin}/api/image?page=1&limit=2`,
+      previous: `${deployedOrigin}/api/pin?page=1&limit=2`,
     });
 
     await api
-      .delete(`/api/category/${createdCategory.body.data.id}`)
-      .set("Authorization", authorization)
-      .expect(204);
-
-    const imageAfterCategoryDeletion = await api
-      .get(`/api/image/${createdImage.body.data.id}`)
-      .set("Authorization", authorization);
-    expect(imageAfterCategoryDeletion.status).toBe(200);
-    expect(imageAfterCategoryDeletion.body.categories).toEqual([]);
-
-    await api
-      .delete(`/api/image/${createdImage.body.data.id}`)
+      .delete(`/api/pin/${createdPin.body.data.id}`)
       .set("Authorization", authorization)
       .expect(204);
     expect(SpacesStorageService.prototype.delete).toHaveBeenCalledWith(
       `test/images/${registration.body.data.id}/test-2.png`,
     );
     await api
-      .get(`/api/image/${createdImage.body.data.id}`)
+      .get(`/api/pin/${createdPin.body.data.id}`)
       .set("Authorization", authorization)
       .expect(404);
+
+    const folderAfterPinDeletion = await api
+      .get(`/api/folder/${createdFolder.body.data.id}`)
+      .set("Authorization", authorization)
+      .expect(200);
+    expect(folderAfterPinDeletion.body.pinCount).toBe(2);
+    expect(
+      folderAfterPinDeletion.body.pins.map((pin: { id: string }) => pin.id),
+    ).not.toContain(createdPin.body.data.id);
+
+    await api
+      .delete(`/api/folder/${createdFolder.body.data.id}`)
+      .set("Authorization", authorization)
+      .expect(204);
+
+    const pinAfterFolderDeletion = await api
+      .get(`/api/pin/${additionalPinIds[0]}`)
+      .set("Authorization", authorization);
+    expect(pinAfterFolderDeletion.status).toBe(200);
+    expect(pinAfterFolderDeletion.body.folders).toEqual([]);
   });
 
   it("enforces authentication, ownership, and user roles", async () => {
@@ -252,41 +321,200 @@ describe("API E2E", () => {
     const ownerToken = await login("owner@example.com");
     const otherToken = await login("other@example.com");
 
-    const category = await api
-      .post("/api/category")
+    const folder = await api
+      .post("/api/folder")
       .set("Authorization", `Bearer ${ownerToken}`)
       .send({ name: "Design" })
       .expect(201);
 
-    const otherCategory = await api
-      .post("/api/category")
+    const otherFolder = await api
+      .post("/api/folder")
       .set("Authorization", `Bearer ${otherToken}`)
-      .send({ name: "Other user category" })
+      .send({ name: "Other user folder" })
       .expect(201);
 
-    const ownerCategories = await api
-      .get("/api/category/mine")
+    const ownerFolders = await api
+      .get("/api/folder/mine")
       .set("Authorization", `Bearer ${ownerToken}`)
       .expect(200);
     expect(
-      ownerCategories.body.data.map((item: { id: string }) => item.id),
-    ).toEqual([category.body.data.id]);
-    expect(ownerCategories.body.data).not.toContainEqual(
-      expect.objectContaining({ id: otherCategory.body.data.id }),
+      ownerFolders.body.data.map((item: { id: string }) => item.id),
+    ).toEqual([folder.body.data.id]);
+    expect(ownerFolders.body.data).not.toContainEqual(
+      expect.objectContaining({ id: otherFolder.body.data.id }),
     );
 
+    const ownerFolderList = await api
+      .get("/api/folder?page=1&limit=20")
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(200);
+    expect(
+      ownerFolderList.body.data.map((item: { id: string }) => item.id),
+    ).toEqual([folder.body.data.id]);
+
+    await api
+      .get(`/api/folder/${otherFolder.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(404);
+
+    const ownerPin = await api
+      .post("/api/pin")
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .field("title", "Shared inspiration")
+      .field("description", "Visible Pin, private folders")
+      .field("folderIds", folder.body.data.id)
+      .attach("image", TEST_PNG, {
+        filename: "shared.png",
+        contentType: "image/png",
+      })
+      .expect(201);
+
+    expect(ownerPin.body.data).toMatchObject({
+      likeCount: 0,
+      likedByCurrentUser: false,
+    });
+
+    const likedByOtherUser = await api
+      .post(`/api/pin/${ownerPin.body.data.id}/likes`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(likedByOtherUser.body.data).toMatchObject({
+      likeCount: 1,
+      likedByCurrentUser: true,
+    });
+
+    const likeSeenByOwner = await api
+      .get(`/api/pin/${ownerPin.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(200);
+    expect(likeSeenByOwner.body).toMatchObject({
+      likeCount: 1,
+      likedByCurrentUser: false,
+    });
+
+    const repeatedLike = await api
+      .post(`/api/pin/${ownerPin.body.data.id}/likes`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(repeatedLike.body.data.likeCount).toBe(1);
+
+    const removedLike = await api
+      .delete(`/api/pin/${ownerPin.body.data.id}/likes`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(removedLike.body.data).toMatchObject({
+      likeCount: 0,
+      likedByCurrentUser: false,
+    });
+
+    const createdComment = await api
+      .post(`/api/pin/${ownerPin.body.data.id}/comments`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .send({ content: "Essa referência ficou ótima." })
+      .expect(201);
+    expect(createdComment.body.data).toMatchObject({
+      content: "Essa referência ficou ótima.",
+      author: { id: owner.getId() },
+      likeCount: 0,
+      likedByCurrentUser: false,
+      canDelete: true,
+    });
+
+    const commentsSeenByOtherUser = await api
+      .get(`/api/pin/${ownerPin.body.data.id}/comments`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(commentsSeenByOtherUser.body.data).toEqual([
+      expect.objectContaining({
+        id: createdComment.body.data.id,
+        canDelete: false,
+      }),
+    ]);
+
+    const likedComment = await api
+      .post(
+        `/api/pin/${ownerPin.body.data.id}/comments/${createdComment.body.data.id}/likes`,
+      )
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(likedComment.body.data).toMatchObject({
+      likeCount: 1,
+      likedByCurrentUser: true,
+    });
+
+    const repeatedCommentLike = await api
+      .post(
+        `/api/pin/${ownerPin.body.data.id}/comments/${createdComment.body.data.id}/likes`,
+      )
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(repeatedCommentLike.body.data.likeCount).toBe(1);
+
+    const pinWithComment = await api
+      .get(`/api/pin/${ownerPin.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(200);
+    expect(pinWithComment.body.commentCount).toBe(1);
+
+    await api
+      .delete(
+        `/api/pin/${ownerPin.body.data.id}/comments/${createdComment.body.data.id}`,
+      )
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(403);
+
+    await api
+      .delete(
+        `/api/pin/${ownerPin.body.data.id}/comments/${createdComment.body.data.id}`,
+      )
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(204);
+
+    const pinWithoutComment = await api
+      .get(`/api/pin/${ownerPin.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(200);
+    expect(pinWithoutComment.body.commentCount).toBe(0);
+
+    await api
+      .post(
+        `/api/folder/${otherFolder.body.data.id}/pins/${ownerPin.body.data.id}`,
+      )
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+
+    const pinSeenByOwner = await api
+      .get(`/api/pin/${ownerPin.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(200);
+    expect(pinSeenByOwner.body.folders).toEqual([
+      expect.objectContaining({ id: folder.body.data.id }),
+    ]);
+    expect(pinSeenByOwner.body.savedFolderIds).toEqual([folder.body.data.id]);
+
+    const pinSeenByOtherUser = await api
+      .get(`/api/pin/${ownerPin.body.data.id}`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(pinSeenByOtherUser.body.folders).toEqual([
+      expect.objectContaining({ id: otherFolder.body.data.id }),
+    ]);
+    expect(pinSeenByOtherUser.body.savedFolderIds).toEqual([
+      otherFolder.body.data.id,
+    ]);
+
     const missingToken = await api
-      .post("/api/category")
+      .post("/api/folder")
       .send({ name: "Without authentication" });
     expect(missingToken.status).toBe(401);
 
-    const privateFeedWithoutToken = await api.get("/api/image");
+    const privateFeedWithoutToken = await api.get("/api/pin");
     expect(privateFeedWithoutToken.status).toBe(401);
 
     const forbiddenUpdate = await api
-      .put(`/api/category/${category.body.data.id}`)
+      .put(`/api/folder/${folder.body.data.id}`)
       .set("Authorization", `Bearer ${otherToken}`)
-      .send({ name: "Unauthorized category update" });
+      .send({ name: "Unauthorized folder update" });
     expect(forbiddenUpdate.status).toBe(403);
 
     const forbiddenUserList = await api
@@ -294,10 +522,10 @@ describe("API E2E", () => {
       .set("Authorization", `Bearer ${ownerToken}`);
     expect(forbiddenUserList.status).toBe(403);
 
-    const persistedCategory = await api.get(
-      `/api/category/${category.body.data.id}`,
-    );
-    expect(persistedCategory.body.name).toBe("Design");
+    const persistedFolder = await api
+      .get(`/api/folder/${folder.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`);
+    expect(persistedFolder.body.name).toBe("Design");
     expect(owner.getId()).not.toBe(other.getId());
   });
 
@@ -339,7 +567,7 @@ describe("API E2E", () => {
     const authorization = `Bearer ${readerToken}`;
 
     const invalidId = await api
-      .get("/api/image/not-a-uuid")
+      .get("/api/pin/not-a-uuid")
       .set("Authorization", authorization)
       .set("X-Request-Id", "e2e-invalid-id");
 
@@ -350,16 +578,16 @@ describe("API E2E", () => {
     });
 
     const missingImage = await api
-      .get("/api/image/123e4567-e89b-42d3-a456-426614174000")
+      .get("/api/pin/123e4567-e89b-42d3-a456-426614174000")
       .set("Authorization", authorization);
     expect(missingImage.status).toBe(404);
-    expect(missingImage.body.message).toBe("Imagem não encontrada.");
+    expect(missingImage.body.message).toBe("Pin não encontrado.");
     expect(missingImage.body.requestId).toBe(
       missingImage.headers["x-request-id"],
     );
 
     const invalidPagination = await api
-      .get("/api/image?page=0&limit=101")
+      .get("/api/pin?page=0&limit=101")
       .set("Authorization", authorization);
     expect(invalidPagination.status).toBe(400);
   });
@@ -367,7 +595,7 @@ describe("API E2E", () => {
   it("sets CORS headers only for configured browser origins", async () => {
     const allowedOrigin = "http://localhost:5173";
     const allowedResponse = await api
-      .options("/api/category")
+      .options("/api/folder")
       .set("Origin", allowedOrigin)
       .set("Access-Control-Request-Method", "POST")
       .set("Access-Control-Request-Headers", "Authorization, Content-Type");
@@ -384,7 +612,7 @@ describe("API E2E", () => {
     );
 
     const blockedResponse = await api
-      .get("/api/image")
+      .get("/api/pin")
       .set("Origin", "https://example.com");
 
     expect(blockedResponse.status).toBe(401);

@@ -43,7 +43,11 @@ describe("LoginPage", () => {
       message: "Login bem-sucedido",
       token: "jwt-token",
     });
-    renderLoginPage();
+    const { queryClient } = renderLoginPage();
+    const previousUserFoldersKey = ["folders", "mine", "previous-user"];
+    queryClient.setQueryData(previousUserFoldersKey, {
+      data: [{ id: "private-folder" }],
+    });
 
     await user.type(screen.getByLabelText("Email"), "user@example.com");
     await user.type(screen.getByLabelText("Senha"), "password123");
@@ -59,6 +63,7 @@ describe("LoginPage", () => {
       );
     });
     expect(mocks.saveAuthToken).toHaveBeenCalledWith("jwt-token");
+    expect(queryClient.getQueryData(previousUserFoldersKey)).toBeUndefined();
     expect(mocks.navigate).toHaveBeenCalledWith({ to: "/feed" });
   });
 

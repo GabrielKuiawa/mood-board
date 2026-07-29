@@ -10,7 +10,7 @@ import ConflictException from "../../../src/exception/ConflictException";
 import ForbiddenException from "../../../src/exception/ForbiddenException";
 import UnauthorizedException from "../../../src/exception/UnauthorizedException";
 import { UserNotFoundException } from "../../../src/exception/UserNotFoundException";
-import Image from "../../../src/models/Image";
+import Pin from "../../../src/models/Pin";
 import { User } from "../../../src/models/User";
 import UserRepository from "../../../src/repository/UserRepository";
 import { UserService } from "../../../src/service/UserService";
@@ -21,10 +21,10 @@ type UserRepositoryMock = jest.Mocked<
   Pick<
     UserRepository,
     | "findOne"
-    | "findOneWithImages"
+    | "findOneWithPins"
     | "findPaginated"
     | "findOneByEmail"
-    | "findImagesByUserIdPaginated"
+    | "findPinsByUserIdPaginated"
     | "save"
     | "delete"
   >
@@ -72,10 +72,10 @@ describe("UserService", () => {
   beforeEach(() => {
     userRepository = {
       findOne: jest.fn(),
-      findOneWithImages: jest.fn(),
+      findOneWithPins: jest.fn(),
       findPaginated: jest.fn(),
       findOneByEmail: jest.fn(),
-      findImagesByUserIdPaginated: jest.fn(),
+      findPinsByUserIdPaginated: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
     };
@@ -233,18 +233,18 @@ describe("UserService", () => {
     });
   });
 
-  it("should return a user with images to an administrator", async () => {
+  it("should return a user with Pins to an administrator", async () => {
     const user = createUser();
     userRepository.findOne.mockResolvedValue(user);
-    userRepository.findImagesByUserIdPaginated.mockResolvedValue([[], 0]);
+    userRepository.findPinsByUserIdPaginated.mockResolvedValue([[], 0]);
 
     await expect(
-      userService.getUserWithImages(USER_ID, admin, PAGINATION),
+      userService.getUserWithPins(USER_ID, admin, PAGINATION),
     ).resolves.toMatchObject({
       user,
-      images: { data: [], meta: { total: 0 } },
+      pins: { data: [], meta: { total: 0 } },
     });
-    expect(userRepository.findImagesByUserIdPaginated).toHaveBeenCalledWith(
+    expect(userRepository.findPinsByUserIdPaginated).toHaveBeenCalledWith(
       USER_ID,
       PAGINATION,
     );
@@ -380,10 +380,10 @@ describe("UserService", () => {
 
   it("should delete an existing user as an administrator", async () => {
     const user = createUser();
-    const image = new Image();
-    image.setPathImage("https://cdn.example.com/image.png");
-    user.images = [image];
-    userRepository.findOneWithImages.mockResolvedValue(user);
+    const pin = new Pin();
+    pin.setPathImage("https://cdn.example.com/image.png");
+    user.pins = [pin];
+    userRepository.findOneWithPins.mockResolvedValue(user);
     userRepository.delete.mockResolvedValue(undefined);
 
     await userService.deleteUser(USER_ID, admin);
@@ -396,7 +396,7 @@ describe("UserService", () => {
   });
 
   it("does not delete a user from the database when storage deletion fails", async () => {
-    userRepository.findOneWithImages.mockResolvedValue(createUser());
+    userRepository.findOneWithPins.mockResolvedValue(createUser());
     objectStorage.deleteByUrl.mockRejectedValue(
       new Error("storage unavailable"),
     );
