@@ -5,9 +5,10 @@ import Comment from "../../src/models/Comment";
 import Folder from "../../src/models/Folder";
 import Pin from "../../src/models/Pin";
 import { User } from "../../src/models/User";
+import { UserRole } from "../../src/enum/UserRole";
 import UserRepository from "../../src/repository/UserRepository";
 import { seedDatabase } from "../../src/seed/seedDatabase";
-import { seedUsers } from "../../src/seed/seedData";
+import { seedAccountEmails, seedUsers } from "../../src/seed/seedData";
 import { ImageFile, ObjectStorage } from "../../src/types/ObjectStorage";
 import {
   clearTestDatabase,
@@ -51,6 +52,15 @@ describe("database seed", () => {
 
   it("creates the demo dataset and replaces it without duplicating records", async () => {
     const password = "seed-password-123";
+    const retiredUser = new User();
+    retiredUser.setName("Retired seed user");
+    retiredUser.setEmail(seedAccountEmails[seedUsers.length]);
+    retiredUser.setPathImageUser(
+      "https://storage.example.com/test/seed/users/retired.jpg",
+    );
+    retiredUser.setPassword("retired-password-hash");
+    retiredUser.setAdmin(UserRole.USER);
+    await AppDataSource.getRepository(User).save(retiredUser);
 
     const options = {
       storage,
@@ -60,32 +70,35 @@ describe("database seed", () => {
     await expect(
       seedDatabase(AppDataSource, password, options),
     ).resolves.toEqual({
-      users: 24,
-      folders: 240,
-      pins: 1_000,
-      comments: 1_665,
-      uploadedImages: 1_024,
+      users: 12,
+      folders: 120,
+      pins: 500,
+      comments: 832,
+      uploadedImages: 512,
     });
 
     await expect(
       seedDatabase(AppDataSource, password, options),
     ).resolves.toEqual({
-      users: 24,
-      folders: 240,
-      pins: 1_000,
-      comments: 1_665,
-      uploadedImages: 1_024,
+      users: 12,
+      folders: 120,
+      pins: 500,
+      comments: 832,
+      uploadedImages: 512,
     });
 
-    await expect(AppDataSource.getRepository(User).count()).resolves.toBe(24);
+    await expect(AppDataSource.getRepository(User).count()).resolves.toBe(12);
     await expect(AppDataSource.getRepository(Folder).count()).resolves.toBe(
-      240,
+      120,
     );
-    await expect(AppDataSource.getRepository(Pin).count()).resolves.toBe(1_000);
+    await expect(AppDataSource.getRepository(Pin).count()).resolves.toBe(500);
     await expect(AppDataSource.getRepository(Comment).count()).resolves.toBe(
-      1_665,
+      832,
     );
-    expect(deletedUrls).toHaveLength(1_024);
+    expect(deletedUrls).toHaveLength(513);
+    expect(deletedUrls).toContain(
+      "https://storage.example.com/test/seed/users/retired.jpg",
+    );
 
     const userRepository = new UserRepository();
     const demoUser = await userRepository.findOneByEmail(
@@ -113,7 +126,7 @@ describe("database seed", () => {
     expect(seededPin?.getUser()).toBeDefined();
     expect(seededPin?.getFolders().length).toBeGreaterThanOrEqual(1);
     expect(seededPin?.getLikedByUsers().length).toBeGreaterThanOrEqual(1);
-    expect(seededPin?.getLikedByUsers().length).toBeLessThanOrEqual(24);
+    expect(seededPin?.getLikedByUsers().length).toBeLessThanOrEqual(12);
     expect(seededPin?.getPathImage()).toMatch(
       /^https:\/\/storage\.example\.com\/test\/seed\/pins\//,
     );

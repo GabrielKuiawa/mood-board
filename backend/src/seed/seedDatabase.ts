@@ -7,7 +7,12 @@ import Folder from "../models/Folder";
 import Pin from "../models/Pin";
 import { User } from "../models/User";
 import { ImageFile, ObjectStorage, StoredObject } from "../types/ObjectStorage";
-import { seedFolderNames, seedPins, seedUsers } from "./seedData";
+import {
+  seedAccountEmails,
+  seedFolderNames,
+  seedPins,
+  seedUsers,
+} from "./seedData";
 import {
   downloadSeedImage,
   mapWithConcurrency,
@@ -15,7 +20,7 @@ import {
   uploadSeedImages,
 } from "./seedImages";
 
-export const DEFAULT_SEED_PIN_COUNT = 1_000;
+export const DEFAULT_SEED_PIN_COUNT = 500;
 export const DEFAULT_FOLDERS_PER_USER = 10;
 const DEFAULT_UPLOAD_CONCURRENCY = 12;
 
@@ -74,7 +79,7 @@ async function findPreviousSeedImageUrls(
     .createQueryBuilder("user")
     .leftJoinAndSelect("user.pins", "pin")
     .where("user.email IN (:...emails)", {
-      emails: seedUsers.map((user) => user.email),
+      emails: seedAccountEmails,
     })
     .getMany();
 
@@ -177,13 +182,11 @@ export async function seedDatabase(
     ]);
 
     const result = await dataSource.transaction(async (manager) => {
-      const seedEmails = seedUsers.map((user) => user.email);
-
       await manager
         .createQueryBuilder()
         .delete()
         .from(User)
-        .where("email IN (:...emails)", { emails: seedEmails })
+        .where("email IN (:...emails)", { emails: seedAccountEmails })
         .execute();
 
       const users = seedUsers.map((userData, userIndex) => {
