@@ -318,7 +318,9 @@ function DetailsMasonryItem({
 
 export function PinDetailsPage() {
   const { pinId } = route.useParams();
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [loadMoreElement, setLoadMoreElement] =
+    useState<HTMLDivElement | null>(null);
+  const [isLoadMoreVisible, setIsLoadMoreVisible] = useState(false);
   const {
     data: pin,
     error,
@@ -341,21 +343,37 @@ export function PinDetailsPage() {
   });
 
   useEffect(() => {
-    const target = loadMoreRef.current;
-    if (!target || !hasNextPage) return;
+    if (!loadMoreElement) {
+      setIsLoadMoreVisible(false);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isFetchingNextPage) {
-          void fetchNextPage();
-        }
+        setIsLoadMoreVisible(entry.isIntersecting);
       },
-      { rootMargin: "100% 0%" },
+      {
+        rootMargin: "800px 0px",
+      },
     );
 
-    observer.observe(target);
+    observer.observe(loadMoreElement);
+
     return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [loadMoreElement]);
+
+  useEffect(() => {
+    if (!isLoadMoreVisible || !hasNextPage || isFetchingNextPage) {
+      return;
+    }
+
+    void fetchNextPage();
+  }, [
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoadMoreVisible,
+  ]);
 
   const relatedPins = useMemo(
     () =>
@@ -400,8 +418,13 @@ export function PinDetailsPage() {
         </PageFeedback>
       )}
       {hasNextPage && (
-        <div ref={loadMoreRef} aria-hidden="true" className="h-px w-full" />
+        <div
+          ref={(element) => setLoadMoreElement(element)}
+          aria-hidden="true"
+          className="h-px w-full"
+        />
       )}
     </main>
   );
 }
+
