@@ -204,6 +204,50 @@ describe("PinDetailsPage", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("opens the share dialog and copies the Pin and image links", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    mocks.getById.mockResolvedValue(createPin({ id: "reference-id" }));
+
+    renderWithProviders(<PinDetailsPage />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Compartilhar" }),
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "Compartilhar Pin" }),
+    ).toBeVisible();
+    expect(screen.getByLabelText("Link do Pin")).toHaveValue(
+      new URL("/pins/reference-id", window.location.origin).toString(),
+    );
+    expect(screen.getByLabelText("URL da imagem")).toHaveValue(
+      "https://example.com/image.jpg",
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Copiar Link do Pin" }),
+    );
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith(
+        new URL("/pins/reference-id", window.location.origin).toString(),
+      ),
+    );
+    expect(
+      screen.getByRole("button", { name: "Copiado Link do Pin" }),
+    ).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", { name: "Copiar URL da imagem" }),
+    );
+    expect(writeText).toHaveBeenLastCalledWith("https://example.com/image.jpg");
+  });
+
   it("downloads the Pin image with a readable file name", async () => {
     const user = userEvent.setup();
     const imageBlob = new Blob(["image"], { type: "image/jpeg" });

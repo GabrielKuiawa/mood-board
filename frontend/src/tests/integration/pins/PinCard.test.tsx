@@ -1,4 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { PinCard } from "@/features/pins/components/PinCard";
@@ -64,6 +65,7 @@ describe("PinCard", () => {
   });
 
   it("exposes the current card actions", async () => {
+    const user = userEvent.setup();
     renderWithProviders(<PinCard pin={createPin()} index={0} />);
 
     expect(await screen.findByRole("button", { name: /Ideias/ })).toBeVisible();
@@ -74,6 +76,14 @@ describe("PinCard", () => {
     expect(
       screen.getByRole("button", { name: "Compartilhar Pin" }),
     ).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Compartilhar Pin" }));
+    expect(
+      screen.getByRole("dialog", { name: "Compartilhar Pin" }),
+    ).toBeVisible();
+    expect(screen.getByLabelText("URL da imagem")).toHaveValue(
+      "https://example.com/image.jpg",
+    );
   });
 
   it("shows the like action only when used as a detail recommendation", () => {

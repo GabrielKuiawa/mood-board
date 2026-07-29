@@ -39,6 +39,7 @@ export function PinCard({ pin, index, showLike = false }: PinCardProps) {
         pinId={pin.id}
         pinTitle={pin.title}
         pinDescription={pin.description}
+        pinImageUrl={pin.pathImage}
         savedFolderIds={pin.savedFolderIds}
         likeCount={pin.likeCount}
         likedByCurrentUser={pin.likedByCurrentUser}

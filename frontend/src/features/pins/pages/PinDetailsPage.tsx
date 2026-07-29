@@ -22,6 +22,7 @@ import { PinAuthor } from "../components/PinAuthor";
 import { PinCard } from "../components/PinCard";
 import { PinLikeButton } from "../components/PinLikeButton";
 import { PinCardSkeleton } from "../components/PinCardSkeleton";
+import { SharePinDialog } from "../components/SharePinDialog";
 import { initialPinsPage, pinService } from "../services/pinService";
 import type { Pin } from "../types";
 
@@ -131,6 +132,7 @@ function DetailCard({ pin }: { pin: Pin }) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const downloadImage = async () => {
     setIsDownloading(true);
@@ -189,7 +191,11 @@ function DetailCard({ pin }: { pin: Pin }) {
               <span className="text-sm font-semibold">{pin.commentCount}</span>
             )}
           </Button>
-          <IconAction label="Compartilhar" className="hidden sm:inline-flex">
+          <IconAction
+            label="Compartilhar"
+            className="hidden sm:inline-flex"
+            onClick={() => setIsShareDialogOpen(true)}
+          >
             <Share2 aria-hidden="true" />
           </IconAction>
           <div className="ml-auto">
@@ -259,6 +265,13 @@ function DetailCard({ pin }: { pin: Pin }) {
       {isLightboxOpen && (
         <PinLightbox pin={pin} onClose={() => setIsLightboxOpen(false)} />
       )}
+      <SharePinDialog
+        open={isShareDialogOpen}
+        pinId={pin.id}
+        pinTitle={pin.title}
+        imageUrl={pin.pathImage}
+        onClose={() => setIsShareDialogOpen(false)}
+      />
     </>
   );
 }
