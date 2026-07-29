@@ -318,8 +318,9 @@ function DetailsMasonryItem({
 
 export function PinDetailsPage() {
   const { pinId } = route.useParams();
-  const [loadMoreElement, setLoadMoreElement] =
-    useState<HTMLDivElement | null>(null);
+  const [loadMoreElement, setLoadMoreElement] = useState<HTMLDivElement | null>(
+    null,
+  );
   const [isLoadMoreVisible, setIsLoadMoreVisible] = useState(false);
   const {
     data: pin,
@@ -368,12 +369,7 @@ export function PinDetailsPage() {
     }
 
     void fetchNextPage();
-  }, [
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoadMoreVisible,
-  ]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isLoadMoreVisible]);
 
   const relatedPins = useMemo(
     () =>
@@ -427,4 +423,3 @@ export function PinDetailsPage() {
     </main>
   );
 }
-
