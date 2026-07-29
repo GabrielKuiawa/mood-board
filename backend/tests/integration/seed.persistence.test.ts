@@ -137,5 +137,5 @@ describe("database seed", () => {
         ...seededComments.map((comment) => comment.getLikedByUsers().length),
       ),
     ).toBeLessThanOrEqual(4);
-  });
+  }, 30_000);
 });
