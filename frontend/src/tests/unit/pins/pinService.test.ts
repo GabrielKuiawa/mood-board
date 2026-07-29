@@ -138,6 +138,39 @@ describe("pinService", () => {
     );
   });
 
+  it("loads Pins created by a user and deletes one", async () => {
+    const page = createPinPage({ data: [pin] });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(page), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(pinService.getCreatedByUser("user-id")).resolves.toEqual(page);
+    await expect(pinService.delete("pin-id")).resolves.toBeUndefined();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      `${testApiUrl}/api/pin?page=1&limit=100&type=user&id=user-id`,
+      expect.objectContaining({
+        headers: { Authorization: expect.stringMatching(/^Bearer /) },
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      `${testApiUrl}/api/pin/pin-id`,
+      expect.objectContaining({
+        method: "DELETE",
+        headers: { Authorization: expect.stringMatching(/^Bearer /) },
+      }),
+    );
+  });
+
   it("builds a feed URL with text and exact suggestion filters", () => {
     expect(
       createInitialPinsPage({

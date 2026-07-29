@@ -75,6 +75,25 @@ export const pinService = {
     });
   },
 
+  getCreatedByUser(userId: string, signal?: AbortSignal): Promise<PinPage> {
+    const searchParams = new URLSearchParams({
+      page: "1",
+      limit: "100",
+      type: "user",
+      id: userId,
+    });
+
+    return this.getPage(`${pinsPath}?${searchParams.toString()}`, signal);
+  },
+
+  delete(pinId: string): Promise<void> {
+    return apiRequest<void>(`${pinsPath}/${pinId}`, {
+      method: "DELETE",
+      authenticated: true,
+      errorMessage: "Não foi possível excluir o Pin.",
+    });
+  },
+
   like(pinId: string): Promise<PinMutationResponse> {
     return apiRequest<PinMutationResponse>(`${pinsPath}/${pinId}/likes`, {
       method: "POST",

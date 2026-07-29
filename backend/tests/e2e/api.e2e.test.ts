@@ -210,8 +210,9 @@ describe("API E2E", () => {
         "https://test-mood-board-media.nyc3.cdn.digitaloceanspaces.com/test/users/test-1.png",
     });
 
+    const additionalPinIds: string[] = [];
     for (const pinNumber of [2, 3]) {
-      await api
+      const additionalPin = await api
         .post("/api/pin")
         .set("Authorization", authorization)
         .field("title", `Architecture ${pinNumber}`)
@@ -222,6 +223,7 @@ describe("API E2E", () => {
           contentType: "image/png",
         })
         .expect(201);
+      additionalPinIds.push(additionalPin.body.data.id);
     }
 
     const suggestions = await api
@@ -281,17 +283,6 @@ describe("API E2E", () => {
     });
 
     await api
-      .delete(`/api/folder/${createdFolder.body.data.id}`)
-      .set("Authorization", authorization)
-      .expect(204);
-
-    const pinAfterFolderDeletion = await api
-      .get(`/api/pin/${createdPin.body.data.id}`)
-      .set("Authorization", authorization);
-    expect(pinAfterFolderDeletion.status).toBe(200);
-    expect(pinAfterFolderDeletion.body.folders).toEqual([]);
-
-    await api
       .delete(`/api/pin/${createdPin.body.data.id}`)
       .set("Authorization", authorization)
       .expect(204);
@@ -302,6 +293,26 @@ describe("API E2E", () => {
       .get(`/api/pin/${createdPin.body.data.id}`)
       .set("Authorization", authorization)
       .expect(404);
+
+    const folderAfterPinDeletion = await api
+      .get(`/api/folder/${createdFolder.body.data.id}`)
+      .set("Authorization", authorization)
+      .expect(200);
+    expect(folderAfterPinDeletion.body.pinCount).toBe(2);
+    expect(
+      folderAfterPinDeletion.body.pins.map((pin: { id: string }) => pin.id),
+    ).not.toContain(createdPin.body.data.id);
+
+    await api
+      .delete(`/api/folder/${createdFolder.body.data.id}`)
+      .set("Authorization", authorization)
+      .expect(204);
+
+    const pinAfterFolderDeletion = await api
+      .get(`/api/pin/${additionalPinIds[0]}`)
+      .set("Authorization", authorization);
+    expect(pinAfterFolderDeletion.status).toBe(200);
+    expect(pinAfterFolderDeletion.body.folders).toEqual([]);
   });
 
   it("enforces authentication, ownership, and user roles", async () => {
