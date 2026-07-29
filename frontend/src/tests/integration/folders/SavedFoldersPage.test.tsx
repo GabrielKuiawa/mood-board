@@ -31,7 +31,22 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("@/features/auth/hooks/useCurrentUserQuery", () => ({
-  useCurrentUserQuery: () => ({ data: { id: "user-id" } }),
+  useCurrentUserQuery: () => ({
+    data: {
+      id: "user-id",
+      name: "Maria Silva",
+      email: "maria@example.com",
+      pathImageUser: "https://example.com/avatar.jpg",
+      role: "user",
+      readOnly: false,
+    },
+    isPending: false,
+    isError: false,
+  }),
+}));
+
+vi.mock("@/features/auth/hooks/useLogout", () => ({
+  useLogout: () => vi.fn(),
 }));
 
 vi.mock("@/features/folders/services/folderService", () => ({
@@ -66,9 +81,11 @@ describe("SavedFoldersPage", () => {
     renderWithProviders(<SavedFoldersPage />);
 
     expect(
-      await screen.findByRole("heading", { name: "Suas ideias salvas" }),
+      await screen.findByRole("heading", { name: "Maria Silva" }),
     ).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Design" })).toBeVisible();
+    expect(
+      await screen.findByRole("heading", { name: "Design" }),
+    ).toBeVisible();
     expect(screen.getByText("1 Pin")).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Abrir pasta Design" }),

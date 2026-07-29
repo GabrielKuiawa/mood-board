@@ -7,8 +7,8 @@ type AppHeaderProps = {
 
 export function AppHeader({ userMenu }: AppHeaderProps) {
   return (
-    <header className="fixed top-0 right-0 left-17 z-40 h-16 bg-background/95 px-3 backdrop-blur-sm sm:px-4">
-      <div className="flex h-full items-center gap-2">
+    <header className="fixed inset-x-0 top-0 z-40 hidden h-16 border-b bg-white/95 px-3 backdrop-blur-sm md:left-17 md:flex md:border-b-0 md:bg-background/95 md:px-4">
+      <div className="flex h-full w-full items-center gap-3">
         <SearchBar />
 
         {userMenu}

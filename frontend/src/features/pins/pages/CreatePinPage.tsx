@@ -79,9 +79,9 @@ export function CreatePinPage() {
       : null);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-9">
+    <main className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-8 sm:py-9">
       <form onSubmit={handleSubmit}>
-        <div className="mb-7 flex items-center justify-between gap-4">
+        <div className="mb-6 flex items-end justify-between gap-3 sm:mb-7 sm:items-center sm:gap-4">
           <div>
             <p className="text-xs font-semibold tracking-[0.18em] text-primary uppercase">
               Nova inspiração
@@ -92,7 +92,7 @@ export function CreatePinPage() {
           </div>
           <LoadingButton
             type="submit"
-            size="lg"
+            className="h-11 px-5 sm:h-12 sm:px-7"
             isLoading={createPinMutation.isPending}
             loadingLabel="Publicando..."
           >
@@ -112,7 +112,7 @@ export function CreatePinPage() {
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
               className={cn(
-                "group relative flex min-h-105 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-4xl border-2 border-dashed bg-muted/70 p-6 text-center outline-none transition-colors hover:border-primary/50 hover:bg-secondary/60 focus-within:border-primary focus-within:ring-4 focus-within:ring-ring/15",
+                "group relative flex min-h-80 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed bg-muted/70 p-5 text-center outline-none transition-colors hover:border-primary/50 hover:bg-secondary/60 focus-within:border-primary focus-within:ring-4 focus-within:ring-ring/15 sm:min-h-105 sm:rounded-4xl sm:p-6",
                 isDragging && "border-primary bg-secondary",
                 imageInput.previewUrl && "border-solid bg-black",
               )}

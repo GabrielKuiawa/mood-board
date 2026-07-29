@@ -63,7 +63,13 @@ function CommentLikeButton({
   );
 }
 
-export function CommentsPanel({ pinId }: { pinId: string }) {
+export function CommentsPanel({
+  pinId,
+  variant = "inline",
+}: {
+  pinId: string;
+  variant?: "inline" | "sheet";
+}) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
   const [commentPendingDeletion, setCommentPendingDeletion] =
@@ -106,14 +112,22 @@ export function CommentsPanel({ pinId }: { pinId: string }) {
   return (
     <section
       aria-label="Comentários"
-      className="flex flex-col border-t px-5 py-4 lg:col-start-2 lg:row-start-5 lg:row-span-8 lg:min-h-0"
+      className={cn(
+        "flex flex-col border-t px-5 py-4 lg:col-start-2 lg:row-start-5 lg:row-span-8 lg:min-h-0",
+        variant === "sheet" && "h-full min-h-0 border-t-0",
+      )}
     >
       <h2 className="font-bold">
         {comments.length} {comments.length === 1 ? "comentário" : "comentários"}
       </h2>
 
       {comments.length > 0 && (
-        <div className="mt-3 max-h-96 space-y-4 overflow-y-auto pr-1 lg:min-h-0 lg:max-h-none lg:flex-1">
+        <div
+          className={cn(
+            "mt-3 max-h-96 space-y-4 overflow-y-auto pr-1 lg:min-h-0 lg:max-h-none lg:flex-1",
+            variant === "sheet" && "min-h-0 max-h-none flex-1",
+          )}
+        >
           {comments.map((comment) => (
             <article key={comment.id} className="flex gap-3">
               <Avatar className="size-8 shrink-0">
@@ -163,7 +177,10 @@ export function CommentsPanel({ pinId }: { pinId: string }) {
       )}
 
       <form
-        className="mt-4 flex shrink-0 gap-2 lg:mt-auto lg:pt-4"
+        className={cn(
+          "mt-4 flex shrink-0 gap-2 lg:mt-auto lg:pt-4",
+          variant === "sheet" && "mt-auto pt-4",
+        )}
         onSubmit={(event) => {
           event.preventDefault();
           const text = content.trim();

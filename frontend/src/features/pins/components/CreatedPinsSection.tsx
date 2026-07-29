@@ -13,11 +13,13 @@ const createdPinsQueryKey = (userId: string) =>
 type CreatedPinsSectionProps = {
   userId: string;
   readOnly?: boolean;
+  showHeader?: boolean;
 };
 
 export function CreatedPinsSection({
   userId,
   readOnly = false,
+  showHeader = true,
 }: CreatedPinsSectionProps) {
   const queryClient = useQueryClient();
   const [pinPendingDeletion, setPinPendingDeletion] = useState<Pin>();
@@ -50,26 +52,31 @@ export function CreatedPinsSection({
   const pins = pinsQuery.data?.data ?? [];
 
   return (
-    <section aria-labelledby="created-pins-title">
-      <header className="mb-8">
-        <p className="text-sm font-semibold text-muted-foreground">
-          Seu conteúdo
-        </p>
-        <h1
-          id="created-pins-title"
-          className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-4xl"
-        >
-          Seus Pins
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {readOnly
-            ? "Explore os Pins publicados por esta conta de demonstração."
-            : "Visualize e exclua os Pins publicados pela sua conta."}
-        </p>
-      </header>
+    <section
+      aria-labelledby={showHeader ? "created-pins-title" : undefined}
+      aria-label={showHeader ? undefined : "Pins criados"}
+    >
+      {showHeader && (
+        <header className="mb-8">
+          <p className="text-sm font-semibold text-muted-foreground">
+            Seu conteúdo
+          </p>
+          <h1
+            id="created-pins-title"
+            className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-4xl"
+          >
+            Seus Pins
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {readOnly
+              ? "Explore os Pins publicados por esta conta de demonstração."
+              : "Visualize e exclua os Pins publicados pela sua conta."}
+          </p>
+        </header>
+      )}
 
       {pinsQuery.isPending ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {Array.from({ length: 4 }, (_, index) => (
             <div
               key={index}
@@ -87,7 +94,7 @@ export function CreatedPinsSection({
           Você ainda não criou nenhum Pin.
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {pins.map((pin) => (
             <article
               key={pin.id}

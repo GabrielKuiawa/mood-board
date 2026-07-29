@@ -78,6 +78,10 @@ describe("AppLayout", () => {
       "href",
       "/feed",
     );
+    expect(screen.getByRole("link", { name: "Pesquisar" })).toHaveAttribute(
+      "href",
+      "/search",
+    );
     expect(screen.getByRole("link", { name: "Criar Pin" })).toHaveAttribute(
       "href",
       "/create",

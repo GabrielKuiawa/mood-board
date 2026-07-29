@@ -25,7 +25,7 @@ export function PinCard({ pin, index, showLike = false }: PinCardProps) {
         aria-label={`Ver detalhes de ${pin.title}`}
       />
       <img
-        className={`block h-auto min-h-60 max-h-130 w-full rounded-2xl object-cover transition-opacity duration-500 ease-out ${
+        className={`block h-auto min-h-0 max-h-130 w-full rounded-2xl object-cover transition-opacity duration-500 ease-out sm:min-h-60 ${
           isLoaded ? "opacity-100" : "opacity-0"
         }`}
         src={pin.pathImage}

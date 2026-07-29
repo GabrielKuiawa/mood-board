@@ -115,18 +115,20 @@ describe("PinDetailsPage", () => {
         .getByRole("heading", { name: "Arquitetura brutalista" })
         .closest('[role="article"]'),
     ).toHaveClass(
-      "lg:aspect-square",
       "lg:grid",
+      "lg:aspect-square",
       "lg:grid-cols-2",
       "lg:grid-rows-12",
     );
     expect(screen.getByRole("link", { name: "Voltar" })).toHaveAttribute(
       "href",
-      "/",
+      "/feed",
     );
     expect(
-      screen.getByRole("article").parentElement?.parentElement,
-    ).toHaveClass("col-span-full", "md:col-span-4");
+      screen
+        .getByRole("heading", { name: "Mais para explorar" })
+        .closest("section"),
+    ).toHaveClass("lg:hidden");
     expect(mocks.getById).toHaveBeenCalledWith(
       "reference-id",
       expect.any(AbortSignal),
@@ -134,6 +136,7 @@ describe("PinDetailsPage", () => {
   });
 
   it("keeps the standard detail layout and exposes the comment count", async () => {
+    const user = userEvent.setup();
     mocks.getById.mockResolvedValue(
       createPin({ id: "reference-id", commentCount: 3 }),
     );
@@ -161,6 +164,16 @@ describe("PinDetailsPage", () => {
       await screen.findByRole("button", { name: "3 comentários" }),
     ).toBeVisible();
     expect(await screen.findByText("Uma ótima referência.")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "3 comentários" }));
+    expect(
+      screen.getByRole("dialog", { name: "Comentários do Pin" }),
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("button", { name: "Fechar comentários" }),
+    );
+    expect(
+      screen.queryByRole("dialog", { name: "Comentários do Pin" }),
+    ).not.toBeInTheDocument();
     expect(
       screen
         .getByRole("heading", { name: "Referência" })
