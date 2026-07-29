@@ -19,6 +19,17 @@ export type Pin = {
   savedFolderIds: string[];
   likeCount: number;
   likedByCurrentUser: boolean;
+  commentCount: number;
+};
+
+export type PinComment = {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: PinAuthor;
+  likeCount: number;
+  likedByCurrentUser: boolean;
+  canDelete: boolean;
 };
 
 export type PinPage = {

@@ -15,6 +15,7 @@ export function createPin(overrides: Partial<Pin> = {}): Pin {
     savedFolderIds: [],
     likeCount: 0,
     likedByCurrentUser: false,
+    commentCount: 0,
     ...overrides,
   };
 }

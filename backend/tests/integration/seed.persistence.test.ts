@@ -1,6 +1,7 @@
 import * as bcrypt from "bcryptjs";
 import { publicDemoAccount } from "../../src/constants/publicDemoAccount";
 import { AppDataSource } from "../../src/data-source";
+import Comment from "../../src/models/Comment";
 import Folder from "../../src/models/Folder";
 import Pin from "../../src/models/Pin";
 import { User } from "../../src/models/User";
@@ -26,17 +27,22 @@ describe("database seed", () => {
       users: 8,
       folders: 48,
       pins: 200,
+      comments: 332,
     });
 
     await expect(seedDatabase(AppDataSource, password)).resolves.toEqual({
       users: 8,
       folders: 48,
       pins: 200,
+      comments: 332,
     });
 
     await expect(AppDataSource.getRepository(User).count()).resolves.toBe(8);
     await expect(AppDataSource.getRepository(Folder).count()).resolves.toBe(48);
     await expect(AppDataSource.getRepository(Pin).count()).resolves.toBe(200);
+    await expect(AppDataSource.getRepository(Comment).count()).resolves.toBe(
+      332,
+    );
 
     const userRepository = new UserRepository();
     const demoUser = await userRepository.findOneByEmail(
@@ -65,5 +71,22 @@ describe("database seed", () => {
     expect(seededPin?.getFolders().length).toBeGreaterThanOrEqual(1);
     expect(seededPin?.getLikedByUsers().length).toBeGreaterThanOrEqual(1);
     expect(seededPin?.getLikedByUsers().length).toBeLessThanOrEqual(8);
+
+    const seededComments = await AppDataSource.getRepository(Comment).find({
+      relations: { user: true, pin: true, likedByUsers: true },
+    });
+    const seededComment = seededComments[0];
+
+    expect(seededComment?.getContent()).toEqual(expect.any(String));
+    expect(seededComment?.user).toBeDefined();
+    expect(seededComment?.pin).toBeDefined();
+    expect(
+      seededComments.some((comment) => comment.getLikedByUsers().length > 0),
+    ).toBe(true);
+    expect(
+      Math.max(
+        ...seededComments.map((comment) => comment.getLikedByUsers().length),
+      ),
+    ).toBeLessThanOrEqual(4);
   });
 });

@@ -2,17 +2,33 @@ import * as bcrypt from "bcryptjs";
 import { DataSource } from "typeorm";
 import { publicDemoAccount } from "../constants/publicDemoAccount";
 import { UserRole } from "../enum/UserRole";
+import Comment from "../models/Comment";
 import Folder from "../models/Folder";
 import Pin from "../models/Pin";
 import { User } from "../models/User";
 import { seedFolderNames, seedPins, seedUsers } from "./seedData";
 
 const FOLDERS_PER_USER = 6;
+const COMMENT_TEXTS = [
+  "Essa composição ficou muito boa.",
+  "Adorei as cores e a iluminação.",
+  "Já salvei como referência!",
+  "Alguém sabe onde encontro algo parecido?",
+  "A perspectiva dessa imagem é incrível.",
+  "Ótima inspiração para o próximo projeto.",
+  "Esse detalhe fez toda a diferença.",
+  "Gostei muito da ideia.",
+  "A paleta de cores está perfeita.",
+  "Eu usaria isso como papel de parede.",
+  "Que fotografia bonita!",
+  "Tem uma energia muito boa.",
+] as const;
 
 export type SeedResult = {
   users: number;
   folders: number;
   pins: number;
+  comments: number;
 };
 
 export async function seedDatabase(
@@ -105,10 +121,36 @@ export async function seedDatabase(
 
     await manager.getRepository(Pin).save(pins, { chunk: 50 });
 
+    const comments = pins.flatMap((pin, pinIndex) => {
+      if (pinIndex % 3 === 0) return [];
+
+      const numberOfComments = 1 + (pinIndex % 4);
+      return Array.from({ length: numberOfComments }, (_, commentIndex) => {
+        const comment = new Comment();
+        const authorIndex = (pinIndex + commentIndex + 2) % users.length;
+        const numberOfLikes = (pinIndex + commentIndex) % 5;
+
+        comment.setContent(
+          COMMENT_TEXTS[(pinIndex + commentIndex) % COMMENT_TEXTS.length],
+        );
+        comment.pin = pin;
+        comment.user = users[authorIndex];
+
+        for (let likeIndex = 0; likeIndex < numberOfLikes; likeIndex += 1) {
+          comment.likeBy(users[(authorIndex + likeIndex + 1) % users.length]);
+        }
+
+        return comment;
+      });
+    });
+
+    await manager.getRepository(Comment).save(comments, { chunk: 50 });
+
     return {
       users: users.length,
       folders: folders.length,
       pins: pins.length,
+      comments: comments.length,
     };
   });
 }

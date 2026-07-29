@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import Folder from "./Folder";
+import Comment from "./Comment";
 import Pin from "./Pin";
 import { UserRole } from "../enum/UserRole";
 import { validateEmail, validateTextField } from "../utils/validation";
@@ -37,6 +38,12 @@ export class User {
 
   @ManyToMany(() => Pin, (pin) => pin.likedByUsers)
   public likedPins!: Pin[];
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  public comments!: Comment[];
+
+  @ManyToMany(() => Comment, (comment) => comment.likedByUsers)
+  public likedComments!: Comment[];
 
   public getId(): string {
     return this.id;

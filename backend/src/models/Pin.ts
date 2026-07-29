@@ -4,10 +4,12 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { validateTextField } from "../utils/validation";
 import Folder from "./Folder";
+import Comment from "./Comment";
 import { User } from "./User";
 
 @Entity()
@@ -34,6 +36,9 @@ export default class Pin {
     inverseJoinColumn: { name: "userId", referencedColumnName: "id" },
   })
   public likedByUsers!: User[];
+
+  @OneToMany(() => Comment, (comment) => comment.pin)
+  public comments!: Comment[];
 
   @ManyToOne(() => User, (user) => user.pins, {
     nullable: false,
@@ -109,5 +114,9 @@ export default class Pin {
 
   public isLikedBy(userId: string): boolean {
     return this.getLikedByUsers().some((user) => user.getId() === userId);
+  }
+
+  public getComments(): Comment[] {
+    return this.comments ?? [];
   }
 }

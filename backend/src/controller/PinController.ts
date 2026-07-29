@@ -185,6 +185,7 @@ export class PinController {
       savedFolderIds: userFolders.map((folder) => folder.getId()),
       likeCount: pin.getLikedByUsers().length,
       likedByCurrentUser: pin.isLikedBy(authenticatedUserId),
+      commentCount: pin.getComments().length,
     };
   }
 }

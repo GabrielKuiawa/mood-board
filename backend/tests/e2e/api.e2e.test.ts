@@ -396,6 +396,75 @@ describe("API E2E", () => {
       likedByCurrentUser: false,
     });
 
+    const createdComment = await api
+      .post(`/api/pin/${ownerPin.body.data.id}/comments`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .send({ content: "Essa referência ficou ótima." })
+      .expect(201);
+    expect(createdComment.body.data).toMatchObject({
+      content: "Essa referência ficou ótima.",
+      author: { id: owner.getId() },
+      likeCount: 0,
+      likedByCurrentUser: false,
+      canDelete: true,
+    });
+
+    const commentsSeenByOtherUser = await api
+      .get(`/api/pin/${ownerPin.body.data.id}/comments`)
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(commentsSeenByOtherUser.body.data).toEqual([
+      expect.objectContaining({
+        id: createdComment.body.data.id,
+        canDelete: false,
+      }),
+    ]);
+
+    const likedComment = await api
+      .post(
+        `/api/pin/${ownerPin.body.data.id}/comments/${createdComment.body.data.id}/likes`,
+      )
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(likedComment.body.data).toMatchObject({
+      likeCount: 1,
+      likedByCurrentUser: true,
+    });
+
+    const repeatedCommentLike = await api
+      .post(
+        `/api/pin/${ownerPin.body.data.id}/comments/${createdComment.body.data.id}/likes`,
+      )
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(200);
+    expect(repeatedCommentLike.body.data.likeCount).toBe(1);
+
+    const pinWithComment = await api
+      .get(`/api/pin/${ownerPin.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(200);
+    expect(pinWithComment.body.commentCount).toBe(1);
+
+    await api
+      .delete(
+        `/api/pin/${ownerPin.body.data.id}/comments/${createdComment.body.data.id}`,
+      )
+      .set("Authorization", `Bearer ${otherToken}`)
+      .expect(403);
+
+    await api
+      .delete(
+        `/api/pin/${ownerPin.body.data.id}/comments/${createdComment.body.data.id}`,
+      )
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(204);
+
+    const pinWithoutComment = await api
+      .get(`/api/pin/${ownerPin.body.data.id}`)
+      .set("Authorization", `Bearer ${ownerToken}`)
+      .expect(200);
+    expect(pinWithoutComment.body.commentCount).toBe(0);
+
     await api
       .post(
         `/api/folder/${otherFolder.body.data.id}/pins/${ownerPin.body.data.id}`,

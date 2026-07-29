@@ -16,6 +16,7 @@ export default class PinRepository extends BaseRepository<Pin> {
         folders: { user: true },
         user: true,
         likedByUsers: true,
+        comments: true,
       },
       skip: pagination.skip,
       take: pagination.limit,
@@ -33,6 +34,7 @@ export default class PinRepository extends BaseRepository<Pin> {
       .leftJoinAndSelect("pin.folders", "folder")
       .leftJoinAndSelect("folder.user", "folderUser")
       .leftJoinAndSelect("pin.likedByUsers", "likedByUser")
+      .leftJoinAndSelect("pin.comments", "comment")
       .distinct(true)
       .orderBy("pin.id", "ASC")
       .skip(pagination.skip)
@@ -80,6 +82,7 @@ export default class PinRepository extends BaseRepository<Pin> {
         folders: { user: true },
         user: true,
         likedByUsers: true,
+        comments: true,
       },
     });
   }
