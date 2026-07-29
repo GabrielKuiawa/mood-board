@@ -72,7 +72,11 @@ describe("AppLayout", () => {
 
   it("clears the token and opens login on logout", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<AppLayout />);
+    const { queryClient } = renderWithProviders(<AppLayout />);
+    const previousUserFoldersKey = ["folders", "mine", "previous-user"];
+    queryClient.setQueryData(previousUserFoldersKey, {
+      data: [{ id: "private-folder" }],
+    });
 
     await user.click(
       screen.getByRole("button", { name: "Abrir menu do usuário" }),
@@ -80,6 +84,7 @@ describe("AppLayout", () => {
     await user.click(screen.getByRole("button", { name: "Sair" }));
 
     expect(mocks.clearAuthToken).toHaveBeenCalledOnce();
+    expect(queryClient.getQueryData(previousUserFoldersKey)).toBeUndefined();
     expect(mocks.navigate).toHaveBeenCalledWith({ to: "/login" });
   });
 });

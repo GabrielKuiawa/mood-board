@@ -1,12 +1,12 @@
 import { publicDemoAccount } from "../constants/publicDemoAccount";
 
-export type SeedImageData = {
+export type SeedPinData = {
   title: string;
   pathImage: string;
   description: string;
 };
 
-type SeedImageWithoutTitle = Omit<SeedImageData, "title">;
+type SeedPinWithoutTitle = Omit<SeedPinData, "title">;
 
 export const seedUsers = [
   {
@@ -51,7 +51,7 @@ export const seedUsers = [
   },
 ] as const;
 
-export const seedCategoryNames = [
+export const seedFolderNames = [
   "Animais",
   "Arquitetura",
   "Arte abstrata",
@@ -78,7 +78,7 @@ export const seedCategoryNames = [
   "Viagem",
 ] as const;
 
-const seedImagesWithoutTitles: SeedImageWithoutTitle[] = [
+const seedPinsWithoutTitles: SeedPinWithoutTitle[] = [
   {
     pathImage:
       "https://plus.unsplash.com/premium_photo-1679756099018-32b9fec91606?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMjA3fDB8MXxzZWFyY2h8MXx8c3BhY2UlMjBhc3Ryb25vbXl8ZW58MHx8fHwxNzg0MzQ0ODEwfDA&ixlib=rb-4.1.0&q=80&w=1080",
@@ -1127,9 +1127,7 @@ const createTitle = (description: string): string => {
   return title.length <= 150 ? title : `${title.slice(0, 147)}...`;
 };
 
-export const seedImages: SeedImageData[] = seedImagesWithoutTitles.map(
-  (image) => ({
-    ...image,
-    title: createTitle(image.description),
-  }),
-);
+export const seedPins: SeedPinData[] = seedPinsWithoutTitles.map((pin) => ({
+  ...pin,
+  title: createTitle(pin.description),
+}));

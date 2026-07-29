@@ -3,8 +3,8 @@
 Frontend da plataforma Mood Board, construído com React, TypeScript e Vite.
 
 A aplicação possui autenticação, cadastro, feed virtualizado com paginação
-infinita e visualização dos detalhes de cada referência. Rotas privadas validam a
-sessão pela API antes de liberar o conteúdo.
+infinita, visualização dos detalhes de cada Pin e organização em pastas. Rotas
+privadas validam a sessão pela API antes de liberar o conteúdo.
 
 ## Tecnologias
 
@@ -79,10 +79,11 @@ src/
 │   │   ├── hooks/        # Casos de uso de login, cadastro e logout
 │   │   ├── pages/        # Páginas usadas diretamente pelo router
 │   │   └── services/     # Operações de autenticação e sessão
-│   ├── images/
+│   ├── pins/
 │   │   ├── components/   # Cards, listas e elementos de apresentação
-│   │   ├── pages/        # Feed e detalhes de uma imagem
-│   │   └── services/     # Operações disponíveis sobre imagens
+│   │   ├── pages/        # Feed, criação e detalhes de um Pin
+│   │   └── services/     # Operações disponíveis sobre Pins
+│   ├── folders/          # Seleção, criação e persistência de pastas
 │   └── navigation/
 │       └── components/   # Header e sidebar da área autenticada
 ├── lib/                  # Infraestrutura compartilhada, HTTP e storage

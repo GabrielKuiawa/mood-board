@@ -31,8 +31,8 @@ describe("root route", () => {
       description: "API REST da plataforma de inspiração visual Mood Board.",
       repository: "https://github.com/GabrielKuiawa/mood-board",
       endpoints: {
-        images: "/api/image",
-        categories: "/api/category",
+        pins: "/api/pin",
+        folders: "/api/folder",
         users: "/api/user",
         login: "/api/user/login",
         search: "/api/search/suggestions",

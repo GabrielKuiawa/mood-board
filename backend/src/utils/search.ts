@@ -1,6 +1,6 @@
 import BadRequestException from "../exception/BadRequestException";
 import {
-  ImageSearchFilters,
+  PinSearchFilters,
   SearchTargetType,
   searchTargetTypes,
 } from "../types/Search";
@@ -21,11 +21,11 @@ export function validateSearchQuery(
   return validateTextField(value, "Busca", 100);
 }
 
-export function validateImageSearchFilters(
+export function validatePinSearchFilters(
   queryValue: unknown,
   typeValue: unknown,
   idValue: unknown,
-): ImageSearchFilters {
+): PinSearchFilters {
   const query = validateSearchQuery(queryValue, { optional: true });
 
   if (typeValue === undefined && idValue === undefined) {

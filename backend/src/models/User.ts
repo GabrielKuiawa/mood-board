@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import Category from "./Category";
-import Image from "./Image";
+import Folder from "./Folder";
+import Pin from "./Pin";
 import { UserRole } from "../enum/UserRole";
 import { validateEmail, validateTextField } from "../utils/validation";
 @Entity()
@@ -23,11 +23,11 @@ export class User {
   @Column({ type: "enum", enum: UserRole, default: UserRole.USER })
   private admin!: UserRole;
 
-  @OneToMany(() => Category, (category) => category.user)
-  public categories!: Category[];
+  @OneToMany(() => Folder, (folder) => folder.user)
+  public folders!: Folder[];
 
-  @OneToMany(() => Image, (image) => image.user)
-  public images!: Image[];
+  @OneToMany(() => Pin, (pin) => pin.user)
+  public pins!: Pin[];
 
   public getId(): string {
     return this.id;
@@ -77,17 +77,17 @@ export class User {
     this.admin = admin;
   }
 
-  public addCategory(category: Category): void {
-    if (!this.categories) {
-      this.categories = [];
+  public addFolder(folder: Folder): void {
+    if (!this.folders) {
+      this.folders = [];
     }
-    this.categories.push(category);
+    this.folders.push(folder);
   }
 
-  public addImage(image: Image): void {
-    if (!this.images) {
-      this.images = [];
+  public addPin(pin: Pin): void {
+    if (!this.pins) {
+      this.pins = [];
     }
-    this.images.push(image);
+    this.pins.push(pin);
   }
 }

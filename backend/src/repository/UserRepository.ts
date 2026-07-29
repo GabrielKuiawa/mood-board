@@ -1,6 +1,6 @@
 import { User } from "../models/User";
 import { BaseRepository } from "./BaseRepository";
-import Image from "../models/Image";
+import Pin from "../models/Pin";
 import { PaginationParams } from "../types/Pagination";
 
 export default class UserRepository extends BaseRepository<User> {
@@ -12,18 +12,18 @@ export default class UserRepository extends BaseRepository<User> {
     return this.repository.findOneBy({ email } as any);
   }
 
-  public async findOneWithImages(id: string): Promise<User | null> {
+  public async findOneWithPins(id: string): Promise<User | null> {
     return this.repository.findOne({
       where: { id } as any,
-      relations: { images: true },
+      relations: { pins: true },
     });
   }
 
-  public async findImagesByUserIdPaginated(
+  public async findPinsByUserIdPaginated(
     id: string,
     pagination: PaginationParams,
-  ): Promise<[Image[], number]> {
-    return this.repository.manager.getRepository(Image).findAndCount({
+  ): Promise<[Pin[], number]> {
+    return this.repository.manager.getRepository(Pin).findAndCount({
       where: { user: { id } } as any,
       skip: pagination.skip,
       take: pagination.limit,

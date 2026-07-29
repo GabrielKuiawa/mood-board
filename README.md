@@ -23,7 +23,8 @@ Banco MySQL
 | Frontend | [mood-board.gabizin.me](https://mood-board.gabizin.me)         |
 | API      | [api.mood-board.gabizin.me](https://api.mood-board.gabizin.me) |
 
-O domínio atual possui usuários, imagens e categorias. A evolução planejada inclui feed, busca, coleções e descoberta de conteúdo.
+O domínio atual possui usuários, Pins e pastas. Cada usuário pode organizar um
+mesmo Pin em uma ou mais pastas.
 
 ### Conta de demonstração
 

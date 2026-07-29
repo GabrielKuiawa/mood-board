@@ -48,10 +48,10 @@ export default class UserRoute extends BaseRoute {
         this.userController.getUsers(req, res, next),
     );
     this.router.get(
-      "/images/:id",
+      "/pins/:id",
       authMiddleware,
       (req: Request, res: Response, next: NextFunction) =>
-        this.userController.getUserWithImages(req, res, next),
+        this.userController.getUserWithPins(req, res, next),
     );
     this.router.get(
       "/me",

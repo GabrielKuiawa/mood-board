@@ -1,4 +1,4 @@
-export const searchTargetTypes = ["image", "category", "user"] as const;
+export const searchTargetTypes = ["pin", "user"] as const;
 
 export type SearchTargetType = (typeof searchTargetTypes)[number];
 
@@ -7,7 +7,7 @@ export type SearchTarget = {
   id: string;
 };
 
-export type ImageSearchFilters = {
+export type PinSearchFilters = {
   query?: string;
   target?: SearchTarget;
 };

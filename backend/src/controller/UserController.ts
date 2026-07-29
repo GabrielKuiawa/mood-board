@@ -98,14 +98,14 @@ export class UserController {
     }
   }
 
-  public async getUserWithImages(
+  public async getUserWithPins(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
       const id = validateId(req.params.id);
-      const result = await this.userService.getUserWithImages(
+      const result = await this.userService.getUserWithPins(
         id,
         getAuthenticatedUser(req),
         validatePagination(req.query.page, req.query.limit),
@@ -113,14 +113,14 @@ export class UserController {
 
       res.json({
         ...this.serializeUser(result.user),
-        images: {
-          data: result.images.data.map((image) => ({
-            id: image.getId(),
-            title: image.getTitle(),
-            pathImage: image.getPathImage(),
-            description: image.getDescription(),
+        pins: {
+          data: result.pins.data.map((pin) => ({
+            id: pin.getId(),
+            title: pin.getTitle(),
+            pathImage: pin.getPathImage(),
+            description: pin.getDescription(),
           })),
-          meta: serializePaginationMeta(req, result.images.meta),
+          meta: serializePaginationMeta(req, result.pins.meta),
         },
       });
     } catch (error) {

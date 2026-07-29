@@ -2,17 +2,17 @@ import * as bcrypt from "bcryptjs";
 import { DataSource } from "typeorm";
 import { publicDemoAccount } from "../constants/publicDemoAccount";
 import { UserRole } from "../enum/UserRole";
-import Category from "../models/Category";
-import Image from "../models/Image";
+import Folder from "../models/Folder";
+import Pin from "../models/Pin";
 import { User } from "../models/User";
-import { seedCategoryNames, seedImages, seedUsers } from "./seedData";
+import { seedFolderNames, seedPins, seedUsers } from "./seedData";
 
-const CATEGORIES_PER_USER = 6;
+const FOLDERS_PER_USER = 6;
 
 export type SeedResult = {
   users: number;
-  categories: number;
-  images: number;
+  folders: number;
+  pins: number;
 };
 
 export async function seedDatabase(
@@ -56,57 +56,55 @@ export async function seedDatabase(
 
     await manager.getRepository(User).save(users);
 
-    const categoriesByUser = new Map<string, Category[]>();
-    const categories = users.flatMap((user, userIndex) => {
-      const userCategories = Array.from(
-        { length: CATEGORIES_PER_USER },
-        (_, categoryIndex) => {
-          const category = new Category();
+    const foldersByUser = new Map<string, Folder[]>();
+    const folders = users.flatMap((user, userIndex) => {
+      const userFolders = Array.from(
+        { length: FOLDERS_PER_USER },
+        (_, folderIndex) => {
+          const folder = new Folder();
           const nameIndex =
-            (userIndex * CATEGORIES_PER_USER + categoryIndex) %
-            seedCategoryNames.length;
+            (userIndex * FOLDERS_PER_USER + folderIndex) %
+            seedFolderNames.length;
 
-          category.setName(seedCategoryNames[nameIndex]);
-          category.setUser(user);
-          return category;
+          folder.setName(seedFolderNames[nameIndex]);
+          folder.setUser(user);
+          return folder;
         },
       );
 
-      categoriesByUser.set(user.getId(), userCategories);
-      return userCategories;
+      foldersByUser.set(user.getId(), userFolders);
+      return userFolders;
     });
 
-    await manager.getRepository(Category).save(categories);
+    await manager.getRepository(Folder).save(folders);
 
-    const images = seedImages.map((imageData, imageIndex) => {
-      const image = new Image();
-      const owner = users[imageIndex % users.length];
-      const ownerCategories = categoriesByUser.get(owner.getId())!;
-      const numberOfCategories = 1 + (imageIndex % 3);
-      const categoryOffset = imageIndex % ownerCategories.length;
-      const imageCategories = Array.from(
-        { length: numberOfCategories },
-        (_, categoryIndex) =>
-          ownerCategories[
-            (categoryOffset + categoryIndex) % ownerCategories.length
-          ],
+    const pins = seedPins.map((pinData, pinIndex) => {
+      const pin = new Pin();
+      const owner = users[pinIndex % users.length];
+      const ownerFolders = foldersByUser.get(owner.getId())!;
+      const numberOfFolders = 1 + (pinIndex % 3);
+      const folderOffset = pinIndex % ownerFolders.length;
+      const pinFolders = Array.from(
+        { length: numberOfFolders },
+        (_, folderIndex) =>
+          ownerFolders[(folderOffset + folderIndex) % ownerFolders.length],
       );
 
-      image.setTitle(imageData.title);
-      image.setPathImage(imageData.pathImage);
-      image.setDescription(imageData.description);
-      image.user = owner;
-      image.setCategories(imageCategories);
+      pin.setTitle(pinData.title);
+      pin.setPathImage(pinData.pathImage);
+      pin.setDescription(pinData.description);
+      pin.user = owner;
+      pin.setFolders(pinFolders);
 
-      return image;
+      return pin;
     });
 
-    await manager.getRepository(Image).save(images, { chunk: 50 });
+    await manager.getRepository(Pin).save(pins, { chunk: 50 });
 
     return {
       users: users.length,
-      categories: categories.length,
-      images: images.length,
+      folders: folders.length,
+      pins: pins.length,
     };
   });
 }

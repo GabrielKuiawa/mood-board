@@ -1,8 +1,8 @@
 import * as bcrypt from "bcryptjs";
 import { publicDemoAccount } from "../../src/constants/publicDemoAccount";
 import { AppDataSource } from "../../src/data-source";
-import Category from "../../src/models/Category";
-import Image from "../../src/models/Image";
+import Folder from "../../src/models/Folder";
+import Pin from "../../src/models/Pin";
 import { User } from "../../src/models/User";
 import UserRepository from "../../src/repository/UserRepository";
 import { seedDatabase } from "../../src/seed/seedDatabase";
@@ -24,21 +24,19 @@ describe("database seed", () => {
 
     await expect(seedDatabase(AppDataSource, password)).resolves.toEqual({
       users: 8,
-      categories: 48,
-      images: 200,
+      folders: 48,
+      pins: 200,
     });
 
     await expect(seedDatabase(AppDataSource, password)).resolves.toEqual({
       users: 8,
-      categories: 48,
-      images: 200,
+      folders: 48,
+      pins: 200,
     });
 
     await expect(AppDataSource.getRepository(User).count()).resolves.toBe(8);
-    await expect(AppDataSource.getRepository(Category).count()).resolves.toBe(
-      48,
-    );
-    await expect(AppDataSource.getRepository(Image).count()).resolves.toBe(200);
+    await expect(AppDataSource.getRepository(Folder).count()).resolves.toBe(48);
+    await expect(AppDataSource.getRepository(Pin).count()).resolves.toBe(200);
 
     const userRepository = new UserRepository();
     const demoUser = await userRepository.findOneByEmail(
@@ -57,13 +55,13 @@ describe("database seed", () => {
       bcrypt.compare(password, privateSeedUser!.getPassword()),
     ).resolves.toBe(true);
 
-    const seededImage = await AppDataSource.getRepository(Image).findOne({
+    const seededPin = await AppDataSource.getRepository(Pin).findOne({
       where: {},
-      relations: { user: true, categories: true },
+      relations: { user: true, folders: true },
     });
 
-    expect(seededImage?.getTitle()).toEqual(expect.any(String));
-    expect(seededImage?.getUser()).toBeDefined();
-    expect(seededImage?.getCategories().length).toBeGreaterThanOrEqual(1);
+    expect(seededPin?.getTitle()).toEqual(expect.any(String));
+    expect(seededPin?.getUser()).toBeDefined();
+    expect(seededPin?.getFolders().length).toBeGreaterThanOrEqual(1);
   });
 });

@@ -10,7 +10,7 @@ import UserRepository from "../repository/UserRepository";
 import { AuthenticatedUser } from "../types/AuthenticatedUser";
 import { assertOwnerOrAdmin } from "../utils/authorization";
 import { config } from "../config";
-import Image from "../models/Image";
+import Pin from "../models/Pin";
 import {
   createPaginatedResult,
   PaginatedResult,
@@ -103,22 +103,24 @@ export class UserService {
     return user;
   }
 
-  public async getUserWithImages(
+  public async getUserWithPins(
     id: string,
     authenticatedUser: AuthenticatedUser,
     pagination: PaginationParams,
-  ): Promise<{ user: User; images: PaginatedResult<Image> }> {
+  ): Promise<{ user: User; pins: PaginatedResult<Pin> }> {
     assertOwnerOrAdmin(authenticatedUser, id);
 
     const user = await this.userRepository.findOne(id);
     if (!user) throw new UserNotFoundException();
 
-    const [images, total] =
-      await this.userRepository.findImagesByUserIdPaginated(id, pagination);
+    const [pins, total] = await this.userRepository.findPinsByUserIdPaginated(
+      id,
+      pagination,
+    );
 
     return {
       user,
-      images: createPaginatedResult(images, total, pagination),
+      pins: createPaginatedResult(pins, total, pagination),
     };
   }
 
@@ -185,12 +187,12 @@ export class UserService {
   ): Promise<void> {
     assertOwnerOrAdmin(authenticatedUser, id);
 
-    const user = await this.userRepository.findOneWithImages(id);
+    const user = await this.userRepository.findOneWithPins(id);
     if (!user) throw new UserNotFoundException();
 
     const urls = new Set([
       user.getPathImageUser(),
-      ...(user.images ?? []).map((image) => image.getPathImage()),
+      ...(user.pins ?? []).map((pin) => pin.getPathImage()),
     ]);
     await Promise.all(
       [...urls].map((url) => this.getObjectStorage().deleteByUrl(url)),

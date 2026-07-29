@@ -1,6 +1,7 @@
 # Backend
 
-API REST da plataforma Mood Board. O backend gerencia usuários, autenticação, imagens, categorias e seus relacionamentos.
+API REST da plataforma Mood Board. O backend gerencia usuários, autenticação,
+Pins, pastas e seus relacionamentos.
 
 ## Tecnologias
 
@@ -38,9 +39,9 @@ TypeORM / MySQL
 O modelo atual possui os relacionamentos:
 
 ```text
-Usuário 1 ──── * Imagem
-Usuário 1 ──── * Categoria
-Imagem * ───── * Categoria
+Usuário 1 ──── * Pin
+Usuário 1 ──── * Pasta
+Pin * ──────── * Pasta
 ```
 
 ## Variáveis de ambiente
@@ -116,16 +117,16 @@ As rotas dos recursos utilizam o prefixo `/api`.
 
 ### Usuários
 
-| Método   | Endpoint               | Descrição                     |
-| -------- | ---------------------- | ----------------------------- |
-| `POST`   | `/api/user/login`      | Autentica e gera um JWT       |
-| `GET`    | `/api/user`            | Lista usuários                |
-| `POST`   | `/api/user`            | Cadastra um usuário           |
-| `GET`    | `/api/user/:id`        | Busca um usuário              |
-| `PUT`    | `/api/user/:id`        | Atualiza um usuário           |
-| `DELETE` | `/api/user/:id`        | Exclui um usuário             |
-| `GET`    | `/api/user/images/:id` | Busca usuário e suas imagens  |
-| `GET`    | `/api/user/me`         | Retorna o usuário autenticado |
+| Método   | Endpoint             | Descrição                     |
+| -------- | -------------------- | ----------------------------- |
+| `POST`   | `/api/user/login`    | Autentica e gera um JWT       |
+| `GET`    | `/api/user`          | Lista usuários                |
+| `POST`   | `/api/user`          | Cadastra um usuário           |
+| `GET`    | `/api/user/:id`      | Busca um usuário              |
+| `PUT`    | `/api/user/:id`      | Atualiza um usuário           |
+| `DELETE` | `/api/user/:id`      | Exclui um usuário             |
+| `GET`    | `/api/user/pins/:id` | Busca usuário e seus Pins     |
+| `GET`    | `/api/user/me`       | Retorna o usuário autenticado |
 
 O cadastro em `POST /api/user` recebe `multipart/form-data` com `name`,
 `email`, `password` e o avatar no campo `image`. Em `PUT /api/user/:id`, os
@@ -133,20 +134,20 @@ campos de texto continuam obrigatórios, mas `image` é opcional; quando não fo
 enviado, o avatar atual é mantido. O arquivo segue os mesmos formatos e o limite
 de 10 MB usados pelas imagens do board.
 
-`DELETE /api/user/:id` remove do Spaces o avatar e todas as imagens gerenciadas
+`DELETE /api/user/:id` remove do Spaces o avatar e todos os Pins gerenciados
 pela aplicação antes de excluir o usuário e seus relacionamentos do MySQL.
 
-### Imagens
+### Pins
 
-| Método   | Endpoint         | Descrição           |
-| -------- | ---------------- | ------------------- |
-| `GET`    | `/api/image`     | Lista imagens       |
-| `POST`   | `/api/image`     | Publica uma imagem  |
-| `GET`    | `/api/image/:id` | Busca uma imagem    |
-| `PUT`    | `/api/image/:id` | Atualiza uma imagem |
-| `DELETE` | `/api/image/:id` | Exclui uma imagem   |
+| Método   | Endpoint       | Descrição       |
+| -------- | -------------- | --------------- |
+| `GET`    | `/api/pin`     | Lista Pins      |
+| `POST`   | `/api/pin`     | Publica um Pin  |
+| `GET`    | `/api/pin/:id` | Busca um Pin    |
+| `PUT`    | `/api/pin/:id` | Atualiza um Pin |
+| `DELETE` | `/api/pin/:id` | Exclui um Pin   |
 
-Para publicar uma imagem, envie `POST /api/image` como
+Para publicar um Pin, envie `POST /api/pin` como
 `multipart/form-data`, com os campos:
 
 | Campo         | Tipo                       | Obrigatório |
@@ -154,31 +155,33 @@ Para publicar uma imagem, envie `POST /api/image` como
 | `image`       | Arquivo JPEG, PNG ou WebP  | Sim         |
 | `title`       | Texto                      | Sim         |
 | `description` | Texto                      | Sim         |
-| `categoryIds` | UUID repetível no FormData | Não         |
+| `folderIds`   | UUID repetível no FormData | Não         |
 
 O arquivo pode ter até 10 MB. A API envia a imagem ao Spaces e grava a URL
 pública retornada em `pathImage`.
 
-`DELETE /api/image/:id` remove primeiro o objeto do Spaces e depois exclui o
+`DELETE /api/pin/:id` remove primeiro o objeto do Spaces e depois exclui o
 registro do MySQL. URLs externas usadas pelo seed não são enviadas ao Spaces
 para exclusão.
 
-### Categorias
+### Pastas
 
-| Método   | Endpoint             | Descrição                               |
-| -------- | -------------------- | --------------------------------------- |
-| `GET`    | `/api/category`      | Lista categorias                        |
-| `GET`    | `/api/category/mine` | Lista categorias do usuário autenticado |
-| `POST`   | `/api/category`      | Cria uma categoria                      |
-| `GET`    | `/api/category/:id`  | Busca uma categoria                     |
-| `PUT`    | `/api/category/:id`  | Atualiza uma categoria                  |
-| `DELETE` | `/api/category/:id`  | Exclui uma categoria                    |
+| Método   | Endpoint                            | Descrição                  |
+| -------- | ----------------------------------- | -------------------------- |
+| `GET`    | `/api/folder/mine`                  | Lista as pastas do usuário |
+| `POST`   | `/api/folder`                       | Cria uma pasta             |
+| `GET`    | `/api/folder/:id`                   | Busca uma pasta            |
+| `PUT`    | `/api/folder/:id`                   | Renomeia uma pasta         |
+| `DELETE` | `/api/folder/:id`                   | Exclui uma pasta           |
+| `POST`   | `/api/folder/:folderId/pins/:pinId` | Salva um Pin na pasta      |
+| `DELETE` | `/api/folder/:folderId/pins/:pinId` | Remove um Pin da pasta     |
 
 `GET /` apresenta a API e seus principais endpoints.
 
 ## Autenticação e autorização
 
-Cadastro, login e leitura de categorias são públicos. A leitura e todas as operações de escrita de imagens são protegidas. Rotas protegidas recebem o token no cabeçalho:
+Cadastro e login são públicos. A leitura de Pins e todas as operações com
+pastas são protegidas. Rotas protegidas recebem o token no cabeçalho:
 
 ```http
 Authorization: Bearer <token>
@@ -199,7 +202,10 @@ Não edite uma migration que já foi aplicada. Crie uma nova migration para cada
 
 ### Dados de demonstração
 
-O seeder cria 8 usuários, 48 categorias e 200 imagens para desenvolvimento ou demonstração. Ele executa as migrations pendentes e substitui somente as contas com e-mails reservados pelo próprio seed, portanto pode ser executado novamente sem duplicar dados.
+O seeder cria 8 usuários, 48 pastas e 200 Pins para desenvolvimento ou
+demonstração. Ele executa as migrations pendentes e substitui somente as contas
+com e-mails reservados pelo próprio seed, portanto pode ser executado novamente
+sem duplicar dados.
 
 A conta pública `ana.seed@example.com` sempre recebe a senha `MoodBoard123!` e
 um token de somente leitura. Defina em `SEED_USER_PASSWORD` uma senha privada de
