@@ -28,7 +28,7 @@ export function PinCardActions({
 
   return (
     <>
-      <div className="absolute inset-0 opacity-100 transition-opacity duration-200 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+      <div className="absolute inset-0 hidden opacity-0 transition-opacity duration-200 md:block md:group-focus-within:opacity-100 md:group-hover:opacity-100">
         <FolderSaveControl
           pinId={pinId}
           pinTitle={pinTitle}
@@ -47,7 +47,7 @@ export function PinCardActions({
         )}
 
         <Button
-          className="absolute right-3 bottom-3 z-20 bg-white text-black hover:bg-zinc-200"
+          className="absolute right-2 bottom-2 z-20 size-9 bg-white text-black hover:bg-zinc-200 sm:right-3 sm:bottom-3 sm:size-10"
           type="button"
           variant="secondary"
           size="icon"

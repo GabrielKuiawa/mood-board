@@ -25,6 +25,7 @@ describe("UserMenu", () => {
       email: "maria@example.com",
       pathImageUser: "https://example.com/avatar.jpg",
       role: "user",
+      readOnly: false,
     };
     mocks.getCurrentUser.mockReset().mockResolvedValue(currentUser);
     mocks.updateProfile.mockReset().mockResolvedValue({
@@ -66,6 +67,7 @@ describe("UserMenu", () => {
         email: "maria@example.com",
         pathImageUser: "https://example.com/avatar.jpg",
         role: "user",
+        readOnly: false,
       },
     });
     renderWithProviders(<UserMenu onLogout={vi.fn()} />);
@@ -100,6 +102,29 @@ describe("UserMenu", () => {
     expect(await screen.findByText("Maria Souza")).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Salvar" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not offer profile editing to the demo account", async () => {
+    const user = userEvent.setup();
+    mocks.getCurrentUser.mockResolvedValue({
+      id: "demo-user-id",
+      name: "Conta Demo",
+      email: "demo@example.com",
+      pathImageUser: "https://example.com/demo-avatar.jpg",
+      role: "user",
+      readOnly: true,
+    });
+
+    renderWithProviders(<UserMenu onLogout={vi.fn()} />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Abrir menu do usuário" }),
+    );
+
+    expect(await screen.findByText("Conta Demo")).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Editar perfil" }),
     ).not.toBeInTheDocument();
   });
 

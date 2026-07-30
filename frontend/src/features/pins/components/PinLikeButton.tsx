@@ -62,7 +62,7 @@ export function PinLikeButton({
       className={cn(
         "gap-1.5",
         variant === "overlay" &&
-          "absolute bottom-3 left-3 z-20 bg-white px-3 text-zinc-950 shadow-md hover:bg-zinc-200",
+          "absolute bottom-2 left-2 z-20 h-9 bg-white px-3 text-zinc-950 shadow-md hover:bg-zinc-200 sm:bottom-3 sm:left-3 sm:h-10",
       )}
       onClick={(event) => {
         event.preventDefault();

@@ -18,6 +18,7 @@ export type CurrentUser = {
   email: string;
   pathImageUser: string;
   role: string;
+  readOnly: boolean;
 };
 
 export type UpdateProfileData = {

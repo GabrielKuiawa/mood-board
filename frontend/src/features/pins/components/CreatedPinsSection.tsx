@@ -10,7 +10,17 @@ import { pinService } from "../services/pinService";
 const createdPinsQueryKey = (userId: string) =>
   ["pins", "created", userId] as const;
 
-export function CreatedPinsSection({ userId }: { userId: string }) {
+type CreatedPinsSectionProps = {
+  userId: string;
+  readOnly?: boolean;
+  showHeader?: boolean;
+};
+
+export function CreatedPinsSection({
+  userId,
+  readOnly = false,
+  showHeader = true,
+}: CreatedPinsSectionProps) {
   const queryClient = useQueryClient();
   const [pinPendingDeletion, setPinPendingDeletion] = useState<Pin>();
   const queryKey = createdPinsQueryKey(userId);
@@ -43,26 +53,30 @@ export function CreatedPinsSection({ userId }: { userId: string }) {
 
   return (
     <section
-      aria-labelledby="created-pins-title"
-      className="mt-14 border-t pt-9"
+      aria-labelledby={showHeader ? "created-pins-title" : undefined}
+      aria-label={showHeader ? undefined : "Pins criados"}
     >
-      <div>
-        <p className="text-xs font-semibold tracking-[0.18em] text-primary uppercase">
-          Gerenciar conteúdo
-        </p>
-        <h2
-          id="created-pins-title"
-          className="mt-1 font-display text-2xl font-bold tracking-tight"
-        >
-          Seus Pins
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Você só pode excluir Pins criados pela sua conta.
-        </p>
-      </div>
+      {showHeader && (
+        <header className="mb-8">
+          <p className="text-sm font-semibold text-muted-foreground">
+            Seu conteúdo
+          </p>
+          <h1
+            id="created-pins-title"
+            className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-4xl"
+          >
+            Seus Pins
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {readOnly
+              ? "Explore os Pins publicados por esta conta de demonstração."
+              : "Visualize e exclua os Pins publicados pela sua conta."}
+          </p>
+        </header>
+      )}
 
       {pinsQuery.isPending ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {Array.from({ length: 4 }, (_, index) => (
             <div
               key={index}
@@ -80,7 +94,7 @@ export function CreatedPinsSection({ userId }: { userId: string }) {
           Você ainda não criou nenhum Pin.
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {pins.map((pin) => (
             <article
               key={pin.id}
@@ -110,46 +124,50 @@ export function CreatedPinsSection({ userId }: { userId: string }) {
                         }`}
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={`Excluir ${pin.title}`}
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => {
-                    deleteMutation.reset();
-                    setPinPendingDeletion(pin);
-                  }}
-                >
-                  <Trash2 aria-hidden="true" />
-                </Button>
+                {!readOnly && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Excluir ${pin.title}`}
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => {
+                      deleteMutation.reset();
+                      setPinPendingDeletion(pin);
+                    }}
+                  >
+                    <Trash2 aria-hidden="true" />
+                  </Button>
+                )}
               </div>
             </article>
           ))}
         </div>
       )}
 
-      <ConfirmDialog
-        open={Boolean(pinPendingDeletion)}
-        title="Excluir Pin?"
-        description={
-          pinPendingDeletion
-            ? `“${pinPendingDeletion.title}” será removido das suas pastas e a imagem será apagada do armazenamento.`
-            : ""
-        }
-        confirmLabel="Excluir Pin"
-        busy={deleteMutation.isPending}
-        errorMessage={deleteMutation.error?.message}
-        onCancel={() => {
-          deleteMutation.reset();
-          setPinPendingDeletion(undefined);
-        }}
-        onConfirm={() => {
-          if (pinPendingDeletion) {
-            deleteMutation.mutate(pinPendingDeletion.id);
+      {!readOnly && (
+        <ConfirmDialog
+          open={Boolean(pinPendingDeletion)}
+          title="Excluir Pin?"
+          description={
+            pinPendingDeletion
+              ? `“${pinPendingDeletion.title}” será removido das suas pastas e a imagem será apagada do armazenamento.`
+              : ""
           }
-        }}
-      />
+          confirmLabel="Excluir Pin"
+          busy={deleteMutation.isPending}
+          errorMessage={deleteMutation.error?.message}
+          onCancel={() => {
+            deleteMutation.reset();
+            setPinPendingDeletion(undefined);
+          }}
+          onConfirm={() => {
+            if (pinPendingDeletion) {
+              deleteMutation.mutate(pinPendingDeletion.id);
+            }
+          }}
+        />
+      )}
     </section>
   );
 }

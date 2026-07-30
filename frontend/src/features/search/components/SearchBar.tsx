@@ -17,7 +17,11 @@ const suggestionIcons = {
   user: UserRound,
 } satisfies Record<SearchSuggestionType, typeof Search>;
 
-export function SearchBar() {
+type SearchBarProps = {
+  variant?: "default" | "floating";
+};
+
+export function SearchBar({ variant = "default" }: SearchBarProps) {
   const navigate = useNavigate();
   const { activeSearch, applySearch, clearSearch } = useSearchContext();
   const [inputValue, setInputValue] = useState("");
@@ -133,8 +137,13 @@ export function SearchBar() {
           activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined
         }
         autoComplete="off"
-        className="h-12 rounded-2xl border-0 bg-muted pr-20 pl-11 text-base shadow-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder="Pesquise Pins ou pessoas"
+        className={cn(
+          "h-11 rounded-2xl border-0 pr-12 pl-11 text-base placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring sm:h-12 sm:pr-20",
+          variant === "floating"
+            ? "h-12 bg-background shadow-lg sm:h-13"
+            : "bg-muted shadow-none",
+        )}
+        placeholder="Pesquisar Pins e pessoas"
         type="search"
         value={inputValue}
         onChange={(event) => {

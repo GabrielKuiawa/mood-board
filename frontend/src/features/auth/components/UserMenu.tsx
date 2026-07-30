@@ -12,13 +12,14 @@ import { useUpdateProfileMutation } from "../hooks/useUpdateProfileMutation";
 
 type UserMenuProps = {
   onLogout: () => void;
+  triggerMode?: "menu" | "edit";
 };
 
 function getUserInitial(name?: string): string {
   return name?.trim().charAt(0).toUpperCase() || "U";
 }
 
-export function UserMenu({ onLogout }: UserMenuProps) {
+export function UserMenu({ onLogout, triggerMode = "menu" }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("");
@@ -91,26 +92,48 @@ export function UserMenu({ onLogout }: UserMenuProps) {
     <div ref={containerRef} className="relative shrink-0">
       <Button
         type="button"
-        variant="ghost"
-        className="h-11 gap-1 px-1.5"
-        aria-label="Abrir menu do usuário"
+        variant={triggerMode === "edit" ? "secondary" : "ghost"}
+        className={triggerMode === "edit" ? "h-11 px-5" : "h-11 gap-1 px-1.5"}
+        aria-label={
+          triggerMode === "edit" ? "Editar perfil" : "Abrir menu do usuário"
+        }
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-controls="user-menu"
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => {
+          if (triggerMode === "edit" && user) {
+            setName(user.name);
+            setPassword("");
+            setIsPasswordVisible(false);
+            setIsEditing(true);
+            setIsOpen(true);
+            return;
+          }
+
+          setIsOpen((open) => !open);
+        }}
       >
-        <Avatar className="size-9">
-          <AvatarImage src={user?.pathImageUser} alt="" />
-          <AvatarFallback className="bg-slate-500 text-sm text-white">
-            {getUserInitial(user?.name)}
-          </AvatarFallback>
-        </Avatar>
-        <ChevronDown
-          aria-hidden="true"
-          className={`size-4 text-muted-foreground transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
+        {triggerMode === "edit" ? (
+          <>
+            <Pencil aria-hidden="true" />
+            Editar perfil
+          </>
+        ) : (
+          <>
+            <Avatar className="size-9">
+              <AvatarImage src={user?.pathImageUser} alt="" />
+              <AvatarFallback className="bg-slate-500 text-sm text-white">
+                {getUserInitial(user?.name)}
+              </AvatarFallback>
+            </Avatar>
+            <ChevronDown
+              aria-hidden="true"
+              className={`size-4 text-muted-foreground transition-transform ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            />
+          </>
+        )}
       </Button>
 
       {isOpen && (
@@ -118,7 +141,7 @@ export function UserMenu({ onLogout }: UserMenuProps) {
           id="user-menu"
           role="dialog"
           aria-label="Menu do usuário"
-          className="absolute top-[calc(100%+0.5rem)] right-0 z-50 w-80 rounded-2xl border bg-popover p-2 text-popover-foreground shadow-xl"
+          className="fixed top-17 right-3 left-3 z-50 rounded-2xl border bg-popover p-2 text-popover-foreground shadow-xl sm:absolute sm:top-[calc(100%+0.5rem)] sm:right-0 sm:left-auto sm:w-80"
         >
           <p className="px-3 pt-2 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             Conta
@@ -287,22 +310,24 @@ export function UserMenu({ onLogout }: UserMenuProps) {
                     {user.email}
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-9 rounded-lg"
-                  aria-label="Editar perfil"
-                  title="Editar perfil"
-                  onClick={() => {
-                    setName(user.name);
-                    setPassword("");
-                    setIsPasswordVisible(false);
-                    setIsEditing(true);
-                  }}
-                >
-                  <Pencil aria-hidden="true" />
-                </Button>
+                {!user.readOnly && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 rounded-lg"
+                    aria-label="Editar perfil"
+                    title="Editar perfil"
+                    onClick={() => {
+                      setName(user.name);
+                      setPassword("");
+                      setIsPasswordVisible(false);
+                      setIsEditing(true);
+                    }}
+                  >
+                    <Pencil aria-hidden="true" />
+                  </Button>
+                )}
               </div>
             ))}
 

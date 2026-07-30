@@ -341,7 +341,7 @@ export function FolderSaveControl({
       className={cn(
         "flex items-center gap-1",
         variant === "overlay" &&
-          "pointer-events-auto absolute inset-x-3 top-3 z-20 justify-between",
+          "pointer-events-auto absolute inset-x-2 top-2 z-20 justify-between sm:inset-x-3 sm:top-3",
       )}
       onClick={(event) => event.stopPropagation()}
     >
@@ -355,7 +355,7 @@ export function FolderSaveControl({
           className={cn(
             "max-w-45 gap-1 px-2",
             variant === "overlay" &&
-              "w-full bg-black/25 text-white backdrop-blur-sm hover:bg-black/40 hover:text-white",
+              "h-9 w-full bg-black/25 text-white backdrop-blur-sm hover:bg-black/40 hover:text-white sm:h-10",
           )}
           aria-haspopup="dialog"
           aria-expanded={isOpen}
@@ -516,6 +516,7 @@ export function FolderSaveControl({
         variant={isSaved ? "secondary" : "destructive"}
         className={cn(
           "shrink-0",
+          variant === "overlay" && "h-9 px-4 sm:h-10 sm:px-5",
           variant === "overlay" && isSaved && "bg-white text-zinc-950",
         )}
         disabled={saveMutation.isPending}

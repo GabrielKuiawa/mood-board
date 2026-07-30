@@ -92,7 +92,10 @@ export class UserController {
         authenticatedUser,
       );
 
-      res.json(this.serializeUser(user));
+      res.json({
+        ...this.serializeUser(user),
+        readOnly: authenticatedUser.readOnly === true,
+      });
     } catch (error) {
       next(error);
     }

@@ -18,10 +18,11 @@ import { Card } from "@/components/ui/card";
 import { CommentsPanel } from "@/features/comments/components/CommentsPanel";
 import { FolderSaveControl } from "@/features/folders/components/FolderSaveControl";
 import { cn } from "@/lib/utils";
+import { MasonryGrid } from "../components/MasonryGrid";
 import { PinAuthor } from "../components/PinAuthor";
 import { PinCard } from "../components/PinCard";
-import { PinLikeButton } from "../components/PinLikeButton";
 import { PinCardSkeleton } from "../components/PinCardSkeleton";
+import { PinLikeButton } from "../components/PinLikeButton";
 import { SharePinDialog } from "../components/SharePinDialog";
 import { initialPinsPage, pinService } from "../services/pinService";
 import type { Pin } from "../types";
@@ -128,11 +129,74 @@ function PinLightbox({ pin, onClose }: { pin: Pin; onClose: () => void }) {
   );
 }
 
+function MobileCommentsSheet({
+  pinId,
+  onClose,
+}: {
+  pinId: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-100 bg-black/45 lg:hidden"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="Comentários do Pin"
+        className="absolute inset-x-0 bottom-0 flex h-[82dvh] flex-col overflow-hidden rounded-t-4xl bg-background shadow-2xl"
+      >
+        <div className="flex shrink-0 flex-col items-center border-b px-4 pt-2 pb-3">
+          <span
+            aria-hidden="true"
+            className="h-1 w-9 rounded-full bg-muted-foreground/25"
+          />
+          <div className="mt-2 flex w-full items-center">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Fechar comentários"
+              onClick={onClose}
+            >
+              <X aria-hidden="true" />
+            </Button>
+            <h2 className="ml-2 font-bold">O que você acha?</h2>
+          </div>
+        </div>
+        <div className="min-h-0 flex-1">
+          <CommentsPanel pinId={pinId} variant="sheet" />
+        </div>
+      </section>
+    </div>,
+    document.body,
+  );
+}
+
 function DetailCard({ pin }: { pin: Pin }) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState("");
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
 
   const downloadImage = async () => {
     setIsDownloading(true);
@@ -163,11 +227,16 @@ function DetailCard({ pin }: { pin: Pin }) {
     <>
       <Card
         role="article"
-        className="overflow-hidden rounded-3xl border-border bg-card shadow-sm lg:aspect-square lg:grid lg:grid-cols-2 lg:grid-rows-12"
+        className="relative flex flex-col overflow-hidden rounded-none border-x-0 border-border bg-card shadow-none sm:rounded-3xl sm:border sm:shadow-sm lg:aspect-square lg:grid lg:grid-cols-2 lg:grid-rows-12"
       >
-        <div className="flex items-center gap-0.5 p-2.5 sm:px-3 lg:col-start-2 lg:row-start-1">
-          <Button asChild variant="ghost" size="icon" className="size-10">
-            <Link to="/" aria-label="Voltar">
+        <div className="order-2 flex items-center gap-0.5 px-2 py-3 sm:px-3 lg:order-0 lg:col-start-2 lg:row-start-1 lg:p-2.5 lg:px-3">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="absolute top-6 left-3 z-20 size-10 bg-white/90 text-zinc-950 shadow-sm hover:bg-white hover:text-zinc-950 sm:left-4 lg:static lg:bg-transparent lg:text-inherit lg:shadow-none lg:hover:bg-accent lg:hover:text-accent-foreground"
+          >
+            <Link to="/feed" aria-label="Voltar">
               <ArrowLeft aria-hidden="true" />
               <span className="sr-only">Voltar</span>
             </Link>
@@ -185,6 +254,9 @@ function DetailCard({ pin }: { pin: Pin }) {
             }`}
             title="Comentários"
             className="h-10 gap-1.5 px-2.5"
+            aria-haspopup="dialog"
+            aria-expanded={isCommentsOpen}
+            onClick={() => setIsCommentsOpen(true)}
           >
             <MessageCircle aria-hidden="true" />
             {pin.commentCount > 0 && (
@@ -193,7 +265,6 @@ function DetailCard({ pin }: { pin: Pin }) {
           </Button>
           <IconAction
             label="Compartilhar"
-            className="hidden sm:inline-flex"
             onClick={() => setIsShareDialogOpen(true)}
           >
             <Share2 aria-hidden="true" />
@@ -208,7 +279,7 @@ function DetailCard({ pin }: { pin: Pin }) {
           </div>
         </div>
 
-        <div className="px-3 lg:col-start-1 lg:row-start-1 lg:row-span-12 lg:px-0">
+        <div className="order-1 px-3 pt-3 sm:px-4 lg:order-0 lg:col-start-1 lg:row-start-1 lg:row-span-12 lg:px-0 lg:pt-0">
           <div className="relative mx-auto w-fit max-w-full overflow-hidden rounded-3xl bg-muted lg:size-full lg:rounded-none">
             <img
               src={pin.pathImage}
@@ -247,7 +318,7 @@ function DetailCard({ pin }: { pin: Pin }) {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-165 space-y-4 px-5 py-5 lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:min-h-0 lg:max-w-none lg:overflow-y-auto">
+        <div className="order-3 mx-auto w-full max-w-165 space-y-4 px-4 py-3 sm:px-5 lg:order-0 lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:min-h-0 lg:max-w-none lg:overflow-y-auto lg:py-5">
           <div>
             <h1 className="m-0 font-display text-2xl font-bold tracking-tight">
               {pin.title}
@@ -260,7 +331,9 @@ function DetailCard({ pin }: { pin: Pin }) {
             <PinAuthor author={pin.author} />
           </div>
         </div>
-        <CommentsPanel pinId={pin.id} />
+        <div className="order-4 hidden lg:contents">
+          <CommentsPanel pinId={pin.id} />
+        </div>
       </Card>
       {isLightboxOpen && (
         <PinLightbox pin={pin} onClose={() => setIsLightboxOpen(false)} />
@@ -272,6 +345,12 @@ function DetailCard({ pin }: { pin: Pin }) {
         imageUrl={pin.pathImage}
         onClose={() => setIsShareDialogOpen(false)}
       />
+      {isCommentsOpen && (
+        <MobileCommentsSheet
+          pinId={pin.id}
+          onClose={() => setIsCommentsOpen(false)}
+        />
+      )}
     </>
   );
 }
@@ -282,9 +361,11 @@ const masonryGap = 16;
 function DetailsMasonryItem({
   children,
   wide = false,
+  desktopOnly = false,
 }: {
   children: ReactNode;
   wide?: boolean;
+  desktopOnly?: boolean;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [rowSpan, setRowSpan] = useState(1);
@@ -308,7 +389,11 @@ function DetailsMasonryItem({
 
   return (
     <div
-      className={cn("min-w-0", wide && "col-span-full md:col-span-4")}
+      className={cn(
+        "min-w-0",
+        wide && "lg:col-span-4",
+        desktopOnly && "hidden lg:block",
+      )}
       style={{ gridRowEnd: `span ${rowSpan}` }}
     >
       <div ref={contentRef}>{children}</div>
@@ -391,23 +476,37 @@ export function PinDetailsPage() {
     <main className="w-full">
       <div
         aria-busy={isFetchingNextPage}
-        className="grid grid-cols-pins auto-rows-2 grid-flow-dense gap-4 px-4 py-3"
+        className="lg:grid lg:grid-flow-dense lg:grid-cols-pins lg:auto-rows-2 lg:gap-4 lg:px-4 lg:py-3"
       >
         <DetailsMasonryItem wide>
           <DetailCard pin={pin} />
         </DetailsMasonryItem>
         {relatedPins.map((relatedPin, index) => (
-          <DetailsMasonryItem key={relatedPin.id}>
+          <DetailsMasonryItem key={relatedPin.id} desktopOnly>
             <PinCard pin={relatedPin} index={index} showLike />
           </DetailsMasonryItem>
         ))}
         {isFetchingNextPage &&
           Array.from({ length: 12 }, (_, index) => (
-            <DetailsMasonryItem key={`details-skeleton-${index}`}>
+            <DetailsMasonryItem key={`details-skeleton-${index}`} desktopOnly>
               <PinCardSkeleton />
             </DetailsMasonryItem>
           ))}
       </div>
+
+      <section aria-labelledby="more-pins-title" className="pt-7 lg:hidden">
+        <h2
+          id="more-pins-title"
+          className="px-3 font-display text-xl font-bold sm:px-4 sm:text-2xl"
+        >
+          Mais para explorar
+        </h2>
+        <MasonryGrid
+          pins={relatedPins}
+          skeletonCount={isFetchingNextPage ? 12 : 0}
+          busy={isFetchingNextPage}
+        />
+      </section>
       {recommendationsError && relatedPins.length === 0 && (
         <PageFeedback variant="error">
           {recommendationsError.message}

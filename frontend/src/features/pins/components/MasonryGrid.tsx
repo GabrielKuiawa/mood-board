@@ -5,8 +5,10 @@ import type { Pin } from "../types";
 import { PinCard } from "./PinCard";
 import { PinCardSkeleton } from "./PinCardSkeleton";
 
-const minimumColumnWidth = 230;
-const columnGap = 16;
+const desktopMinimumColumnWidth = 230;
+const desktopColumnGap = 16;
+const mobileColumnGap = 8;
+const mobileBreakpoint = 640;
 
 type MasonryGridProps = {
   pins: Pin[];
@@ -19,11 +21,27 @@ type MasonryItem = {
   content: ReactNode;
 };
 
-function getColumnCount(containerWidth: number): number {
-  return Math.max(
-    1,
-    Math.floor((containerWidth + columnGap) / (minimumColumnWidth + columnGap)),
-  );
+function getGridLayout(containerWidth: number): {
+  columnCount: number;
+  columnGap: number;
+} {
+  if (containerWidth < mobileBreakpoint) {
+    return {
+      columnCount: containerWidth >= 300 ? 2 : 1,
+      columnGap: mobileColumnGap,
+    };
+  }
+
+  return {
+    columnCount: Math.max(
+      1,
+      Math.floor(
+        (containerWidth + desktopColumnGap) /
+          (desktopMinimumColumnWidth + desktopColumnGap),
+      ),
+    ),
+    columnGap: desktopColumnGap,
+  };
 }
 
 export function MasonryGrid({
@@ -33,6 +51,7 @@ export function MasonryGrid({
 }: MasonryGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const [columnCount, setColumnCount] = useState(1);
+  const [columnGap, setColumnGap] = useState(mobileColumnGap);
   const [scrollMargin, setScrollMargin] = useState(0);
 
   useLayoutEffect(() => {
@@ -40,7 +59,9 @@ export function MasonryGrid({
     if (!grid) return;
 
     const updateGridMeasurements = (width: number) => {
-      setColumnCount(getColumnCount(width));
+      const layout = getGridLayout(width);
+      setColumnCount(layout.columnCount);
+      setColumnGap(layout.columnGap);
       setScrollMargin(grid.getBoundingClientRect().top + window.scrollY);
     };
 
@@ -77,7 +98,7 @@ export function MasonryGrid({
     count: items.length,
     estimateSize: () => 320,
     getItemKey,
-    gap: 20,
+    gap: columnGap,
     lanes: columnCount,
     overscan: 3,
     scrollMargin,
@@ -89,7 +110,7 @@ export function MasonryGrid({
   }px)`;
 
   return (
-    <div className="w-full px-4 py-3">
+    <div className="w-full px-3 py-3 sm:px-4">
       <div
         ref={gridRef}
         aria-busy={busy}
