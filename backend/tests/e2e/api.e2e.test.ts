@@ -60,7 +60,6 @@ describe("API E2E", () => {
       pathImageUser:
         "https://test-mood-board-media.nyc3.cdn.digitaloceanspaces.com/test/users/test-1.png",
       role: UserRole.USER,
-      readOnly: false,
     });
     expect(registration.body.data).not.toHaveProperty("password");
     expect(registration.headers["x-request-id"]).toBe("e2e-registration");
@@ -83,6 +82,7 @@ describe("API E2E", () => {
       pathImageUser:
         "https://test-mood-board-media.nyc3.cdn.digitaloceanspaces.com/test/users/test-1.png",
       role: UserRole.USER,
+      readOnly: false,
     });
 
     const createdFolder = await api

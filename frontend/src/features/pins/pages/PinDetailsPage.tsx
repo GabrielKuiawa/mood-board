@@ -229,7 +229,7 @@ function DetailCard({ pin }: { pin: Pin }) {
         role="article"
         className="relative flex flex-col overflow-hidden rounded-none border-x-0 border-border bg-card shadow-none sm:rounded-3xl sm:border sm:shadow-sm lg:aspect-square lg:grid lg:grid-cols-2 lg:grid-rows-12"
       >
-        <div className="order-2 flex items-center gap-0.5 px-2 py-3 sm:px-3 lg:order-none lg:col-start-2 lg:row-start-1 lg:p-2.5 lg:px-3">
+        <div className="order-2 flex items-center gap-0.5 px-2 py-3 sm:px-3 lg:order-0 lg:col-start-2 lg:row-start-1 lg:p-2.5 lg:px-3">
           <Button
             asChild
             variant="ghost"
@@ -279,7 +279,7 @@ function DetailCard({ pin }: { pin: Pin }) {
           </div>
         </div>
 
-        <div className="order-1 px-3 pt-3 sm:px-4 lg:order-none lg:col-start-1 lg:row-start-1 lg:row-span-12 lg:px-0 lg:pt-0">
+        <div className="order-1 px-3 pt-3 sm:px-4 lg:order-0 lg:col-start-1 lg:row-start-1 lg:row-span-12 lg:px-0 lg:pt-0">
           <div className="relative mx-auto w-fit max-w-full overflow-hidden rounded-3xl bg-muted lg:size-full lg:rounded-none">
             <img
               src={pin.pathImage}
@@ -318,7 +318,7 @@ function DetailCard({ pin }: { pin: Pin }) {
           </div>
         </div>
 
-        <div className="order-3 mx-auto w-full max-w-165 space-y-4 px-4 py-3 sm:px-5 lg:order-none lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:min-h-0 lg:max-w-none lg:overflow-y-auto lg:py-5">
+        <div className="order-3 mx-auto w-full max-w-165 space-y-4 px-4 py-3 sm:px-5 lg:order-0 lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:min-h-0 lg:max-w-none lg:overflow-y-auto lg:py-5">
           <div>
             <h1 className="m-0 font-display text-2xl font-bold tracking-tight">
               {pin.title}
