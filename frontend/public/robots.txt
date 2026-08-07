@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /create
+Disallow: /feed
+Disallow: /login
+Disallow: /my-pins
+Disallow: /pins/
+Disallow: /saved
+Disallow: /search
+Disallow: /signup
+
+Sitemap: https://mood-board.gabizin.me/sitemap.xml
