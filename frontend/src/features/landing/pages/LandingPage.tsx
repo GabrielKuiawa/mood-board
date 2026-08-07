@@ -139,8 +139,9 @@ export function LandingPage() {
               Guarde o que faz você <span className="text-red-600">parar.</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-7 text-zinc-600 sm:mt-8 sm:text-lg sm:leading-8 xl:text-xl">
-              Um lugar para encontrar imagens que dizem alguma coisa — antes
-              mesmo de você saber explicar o quê.
+              Crie seu mood board, encontre referências visuais e organize as
+              imagens que dizem alguma coisa — antes mesmo de você saber
+              explicar o quê.
             </p>
             <div className="mt-8 flex flex-col gap-2 sm:mt-10 sm:flex-row sm:gap-3">
               <Button
