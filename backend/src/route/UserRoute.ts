@@ -9,7 +9,7 @@ import {
   createLoginRateLimiter,
   createRegistrationRateLimiter,
 } from "../middlewares/rateLimit";
-import { SpacesStorageService } from "../service/SpacesStorageService";
+import { LocalStorageService } from "../service/LocalStorageService";
 import { parseImageUpload } from "../middlewares/imageUpload";
 
 export default class UserRoute extends BaseRoute {
@@ -20,7 +20,7 @@ export default class UserRoute extends BaseRoute {
     const userRepository = new UserRepository();
     const userService = new UserService(
       userRepository,
-      new SpacesStorageService(),
+      new LocalStorageService(),
     );
     this.userController = new UserController(userService);
     this.initRoutes();

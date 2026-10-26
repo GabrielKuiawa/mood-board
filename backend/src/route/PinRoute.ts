@@ -8,7 +8,7 @@ import PinRepository from "../repository/PinRepository";
 import UserRepository from "../repository/UserRepository";
 import CommentRepository from "../repository/CommentRepository";
 import { CommentService } from "../service/CommentService";
-import { SpacesStorageService } from "../service/SpacesStorageService";
+import { LocalStorageService } from "../service/LocalStorageService";
 import { PinService } from "../service/PinService";
 import { BaseRoute } from "./BaseRoute";
 
@@ -23,7 +23,7 @@ export default class PinRoute extends BaseRoute {
         new PinRepository(),
         new UserRepository(),
         new FolderRepository(),
-        new SpacesStorageService(),
+        new LocalStorageService(),
       ),
     );
     this.commentController = new CommentController(

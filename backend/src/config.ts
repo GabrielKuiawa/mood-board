@@ -68,6 +68,7 @@ function readEnvironmentVariableList(
 }
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
+const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim().replace(/\/+$/, "") ?? "";
 const spacesPublicUrl = requireEnvironmentVariable("SPACES_PUBLIC_URL").replace(
   /\/+$/,
   "",
@@ -75,6 +76,7 @@ const spacesPublicUrl = requireEnvironmentVariable("SPACES_PUBLIC_URL").replace(
 
 export const config = {
   port: requirePort("PORT"),
+  publicBaseUrl,
   corsOrigins: readEnvironmentVariableList("CORS_ORIGIN", [
     "http://localhost:5173",
     "https://mood-board.gabizin.me",

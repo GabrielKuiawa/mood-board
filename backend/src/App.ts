@@ -9,6 +9,7 @@ import { requestContext } from "./middlewares/requestContext";
 import Route from "./route/Route";
 import { AppDataSource } from "./data-source";
 import { config } from "./config";
+import path from "node:path";
 
 export default class App {
   private app: Application;
@@ -41,6 +42,7 @@ export default class App {
   }
 
   private initRoutes(): void {
+    this.app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
     const route = new Route();
     this.app.use("/", route.getRouter());
     this.initErrorHandling();

@@ -69,25 +69,7 @@ export const seedUsers = [
   },
 ] as const;
 
-const retiredSeedUserEmails = [
-  "marina.seed@example.com",
-  "nicolas.seed@example.com",
-  "olivia.seed@example.com",
-  "paulo.seed@example.com",
-  "queila.seed@example.com",
-  "rafael.seed@example.com",
-  "sofia.seed@example.com",
-  "tiago.seed@example.com",
-  "ursula.seed@example.com",
-  "vitor.seed@example.com",
-  "wesley.seed@example.com",
-  "yasmin.seed@example.com",
-] as const;
-
-export const seedAccountEmails = [
-  ...seedUsers.map((user) => user.email),
-  ...retiredSeedUserEmails,
-];
+export const seedAccountEmails = seedUsers.map((user) => user.email);
 
 export const seedFolderNames = [
   "Animais",
